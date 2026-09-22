@@ -76,10 +76,35 @@ bugs surface instead of being masked by the working directory.
 common GPT-2/3-small-style starting points, not tuned; the Phase 5 LR sweep replaces them.
 **Revisit if:** the LR sweep or Gate 6a throughput changes the batch or LR (record the new values here).
 
+## 2026-09-22 — Document-level train/val split by content hash
+**Context:** PLAN.md requires the tokenizer to train on the train split only (Phase 1), but the split was
+defined in Phase 2. If the two phases chose validation documents differently, validation text would leak
+into tokenizer training.
+**Decision:** One function decides the split for every stage: `assign_split(document_hash(normalize_text(doc)))`
+in `src/syrinx/data/documents.py`. The hash is SHA-256 of the normalized text; the split re-hashes it with
+the salt `syrinx-split-v1` and sends a document to val iff the first 8 bytes / 2^64 < `val_fraction`.
+The same `val_fraction` must be used in Phase 1 and Phase 2 (record the value here once chosen).
+**Why:** Deterministic on any machine and in any order, needs no stored state, and identical documents
+always share a split. Python's `hash()` is randomized per process (verified: two runs gave different
+values for the same string), so it is never used.
+**Revisit if:** near-duplicate (not identical) documents turn out to straddle the split in Gate 2's check;
+then add near-dup detection before the split.
+
+## 2026-09-22 — Tokenizer versioning
+**Context:** Gate 1 requires versioned tokenizer files, but `.gitignore` excludes `tokenizer/artifacts/`.
+**Decision:** Commit the final `tokenizer.json` at `tokenizer/syrinx-bpe-32k/tokenizer.json` (a tracked path),
+and record its SHA-256, the training-data description (dataset, subset, bytes, document counts,
+`val_fraction`) and the command in `experiments/log.md`. Scratch tokenizers go in `tokenizer/artifacts/`.
+**Why:** Every shard and checkpoint depends on the exact merges; the file in git plus its hash makes that
+dependency checkable. The HF release ships the same file.
+**Revisit if:** the file grows too large for comfortable git use.
+
 ---
 
 ## Open (not yet decided — decide before Phase 5)
 - Global batch in tokens/step (starting point ~0.25M for 50M, ~0.5M for 125M).
 - Peak LR, min LR, warmup steps, weight decay, AdamW betas/eps.
 - Validation token count and eval interval.
+- `val_fraction` for the document split (same value in Phases 1 and 2).
+- Tokenizer training corpus (FineWeb-Edu only, or a mix with TinyStories) and size (~1-2 GB).
 - Whether `<|pad|>` is actually needed (random-window packing doesn't pad).
