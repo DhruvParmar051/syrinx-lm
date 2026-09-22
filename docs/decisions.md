@@ -54,6 +54,14 @@ only +7% tok/s (7,165 vs 6,674) for a real risk of OOM or swapping partway throu
 **Decision:** Apache-2.0 for code and weights.
 **Revisit if:** a training-data license requires something different (check in `docs/data.md`).
 
+## 2026-09-22 — Package layout: `src/syrinx/`
+**Context:** Considered `src/__init__.py` (package named `src`) and a flat root-level `syrinx/`.
+**Decision:** `src/` layout with the package at `src/syrinx/`; import name `syrinx`.
+**Why:** A package named `src` collides with any other project using the same pattern and gives
+`from src.x import` imports. The `src/` layout makes tests import the installed package, so packaging
+bugs surface instead of being masked by the working directory.
+**Revisit if:** never, for this project.
+
 ---
 
 ## Open (not yet decided — decide before Phase 5)
