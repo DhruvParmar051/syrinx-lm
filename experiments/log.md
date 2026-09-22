@@ -30,6 +30,23 @@ quoted in the entry. If it can't be traced, it doesn't go in.
 - Headline: 125M bf16 mb8 at 6,674 tok/s (burst) → 2.5B tokens in ~4.3 days; 50M at 13,362 tok/s.
 - Caveats: **proxy**, a 15-step burst, not sustained, not our implementation. Gate 6a re-measures.
 
+## EXP-001 — Matmul throughput depends on power source (battery vs AC)
+- Date: 2026-09-22
+- Git SHA: pre-commit of `scripts/check_env.py` power fields (same session as EXP-000)
+- Command: `uv run python scripts/check_env.py --out experiments/env-battery-2026-09-22.txt`
+- Hardware state: **Battery Power**, `pmset_powermode: 1` (the AC profile on this
+  machine is `powermode 2`, per `pmset -g custom`)
+- Metrics (source: `env-battery-2026-09-22.txt`): fp32 3.83, fp16 23.97,
+  bf16 22.13 TFLOPS (n=4096, 30 iters)
+- Comparison: EXP-000 measured fp32 7.43 / bf16 30.83 TFLOPS the same morning **on AC**
+  (`experiments/feasibility-2026-09-22.md`).
+- Observations: on battery, matmul throughput is roughly 2x lower (fp32) and substantially lower (bf16).
+  Same code, same shapes; only the power state differed.
+- Caveats: one run per condition; thermal state not controlled. The AC baseline `experiments/env.txt`
+  (Gate 0) must be regenerated on AC with the new power fields.
+- Consequence: every throughput measurement (Gate 6a, Phase 7 before/after) must record `power_source`
+  and `pmset_powermode`; comparisons across different power states are invalid.
+
 ---
 
 ## Known-good resume command
