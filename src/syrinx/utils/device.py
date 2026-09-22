@@ -106,3 +106,30 @@ def resolve_device(requested: str | None = None) -> torch.device:
     _check_backend(device_type)
     logger.info("Using device %s (from %s)", device_type, source)
     return torch.device(device_type)
+
+
+def synchronize(device: torch.device) -> None:
+    """Block until all work queued on ``device`` has finished.
+
+    GPU backends (MPS, CUDA) run asynchronously: a call returns as soon as the work
+    is queued, not when it is done. Call this before starting and before stopping
+    any timer. No-op on cpu. Dispatch on ``device.type``, never on ``device``
+    equality (``torch.device("mps") != torch.device("mps:0")``).
+
+    Args:
+        device: Device to synchronize.
+
+    Raises:
+        ValueError: If ``device.type`` is not one of :data:`VALID_DEVICE_TYPES`.
+    """
+    if device.type == "cpu":
+        return
+    if device.type == "mps":
+        torch.mps.synchronize()
+    elif device.type == "cuda":
+        torch.cuda.synchronize(device)
+    else:
+        raise ValueError(
+            f"Cannot synchronize device type {device.type!r}; "
+            f"expected one of {sorted(VALID_DEVICE_TYPES)}."
+        )
