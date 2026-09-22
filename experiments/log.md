@@ -44,6 +44,9 @@ quoted in the entry. If it can't be traced, it doesn't go in.
   Same code, same shapes; only the power state differed.
 - Caveats: one run per condition; thermal state not controlled. The AC baseline `experiments/env.txt`
   (Gate 0) must be regenerated on AC with the new power fields.
+- Confirmation (same script, AC): `experiments/env.txt` (generated 2026-09-22T13:06, `power_source: AC Power`,
+  `pmset_powermode: 2`) measured fp32 7.53 / fp16 31.76 / bf16 32.1 TFLOPS, matching EXP-000's AC numbers.
+  The drop is the power state, not the code.
 - Consequence: every throughput measurement (Gate 6a, Phase 7 before/after) must record `power_source`
   and `pmset_powermode`; comparisons across different power states are invalid.
 
