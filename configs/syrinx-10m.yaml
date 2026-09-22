@@ -1,0 +1,31 @@
+# syrinx-10m: 11,798,784 params. Overfit tests + ~0.3B TinyStories tokens.
+# model: fixed. Shapes are pinned by the parameter-count tests (docs/decisions.md).
+# train: PROVISIONAL placeholders, see "Open" in docs/decisions.md. Decide before Phase 4.
+# data: paths are placeholders until the Phase 2 pipeline defines its layout.
+name: syrinx-10m
+model:
+  vocab_size: 32768
+  d_model: 256
+  n_layers: 4
+  n_heads: 4
+  d_ff: 768
+  max_seq_len: 1024
+  rope_theta: 10000.0
+  norm_eps: 1.0e-5
+  tie_embeddings: true
+train:
+  micro_batch_size: 32
+  grad_accum_steps: 1          # 32,768 tokens per optimizer step
+  lr: 1.0e-3
+  min_lr: 1.0e-4
+  warmup_steps: 200
+  max_steps: 9000               # 2.95e+08 tokens total
+  weight_decay: 0.1
+  betas: [0.9, 0.95]
+  grad_clip: 1.0
+  precision: bf16-autocast         # probe_bf16 passed on MPS (2026-09-22)
+  seed: 1337
+data:
+  train_path: data_cache/tokens/tinystories/train
+  val_path: data_cache/tokens/tinystories/val
+  seq_len: 1024

@@ -1,7 +1,7 @@
-# Config spec (reference — no code)
+# Config spec
 
-Use this when writing `src/syrinx/config.py`. It says *what* the config must do, not how.
-Write your own version first and use this page to check it.
+What `src/syrinx/config.py` must do. The implementation and `tests/test_config.py` follow
+this page; review changes to either against it.
 
 ## Structure
 Three typed, immutable dataclasses, plus one top-level wrapper that holds them:

@@ -1,0 +1,31 @@
+# syrinx-50m: 50,866,688 params. ~1.0B FineWeb-Edu tokens.
+# model: fixed. Shapes are pinned by the parameter-count tests (docs/decisions.md).
+# train: PROVISIONAL placeholders, see "Open" in docs/decisions.md. Decide before Phase 5.
+# data: paths are placeholders until the Phase 2 pipeline defines its layout.
+name: syrinx-50m
+model:
+  vocab_size: 32768
+  d_model: 512
+  n_layers: 10
+  n_heads: 8
+  d_ff: 1536
+  max_seq_len: 1024
+  rope_theta: 10000.0
+  norm_eps: 1.0e-5
+  tie_embeddings: true
+train:
+  micro_batch_size: 16
+  grad_accum_steps: 16          # 262,144 tokens per optimizer step
+  lr: 6.0e-4
+  min_lr: 6.0e-5
+  warmup_steps: 200
+  max_steps: 3815               # 1e+09 tokens total
+  weight_decay: 0.1
+  betas: [0.9, 0.95]
+  grad_clip: 1.0
+  precision: bf16-autocast         # probe_bf16 passed on MPS (2026-09-22)
+  seed: 1337
+data:
+  train_path: data_cache/tokens/fineweb-edu/train
+  val_path: data_cache/tokens/fineweb-edu/val
+  seq_len: 1024

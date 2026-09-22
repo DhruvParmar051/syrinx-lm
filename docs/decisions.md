@@ -62,11 +62,24 @@ only +7% tok/s (7,165 vs 6,674) for a real risk of OOM or swapping partway throu
 bugs surface instead of being masked by the working directory.
 **Revisit if:** never, for this project.
 
+## 2026-09-22 — Config values fixed by `configs/*.yaml`
+**Context:** The config files need concrete values before Phase 4, including a few PLAN.md left open.
+**Decision:**
+- syrinx-10m uses **4 heads** (head_dim 64, same as 50m/125m).
+- `rope_theta = 10000.0`, `norm_eps = 1.0e-5`. Both must be copied unchanged into the exported `LlamaConfig`.
+- `precision: bf16-autocast` for all sizes (`probe_bf16` passed on MPS and CPU, loss rel_err ~1e-6).
+- The `train:` sections are **provisional placeholders**, marked as such in each file:
+  10m: mb 32 × accum 1 (32,768 tok/step), lr 1e-3; 50m: mb 16 × 16 (262,144 tok/step), lr 6e-4;
+  125m: mb 8 × 64 (524,288 tok/step), lr 6e-4. min_lr = lr/10, wd 0.1, betas (0.9, 0.95), clip 1.0, seed 1337.
+  `max_steps` is set so steps × tokens/step reaches the PLAN.md budgets (1.0B / 2.5B); a test pins that.
+**Why:** head_dim 64 everywhere keeps attention kernels comparable across sizes. The train values are
+common GPT-2/3-small-style starting points, not tuned; the Phase 5 LR sweep replaces them.
+**Revisit if:** the LR sweep or Gate 6a throughput changes the batch or LR (record the new values here).
+
 ---
 
 ## Open (not yet decided — decide before Phase 5)
 - Global batch in tokens/step (starting point ~0.25M for 50M, ~0.5M for 125M).
 - Peak LR, min LR, warmup steps, weight decay, AdamW betas/eps.
 - Validation token count and eval interval.
-- 10m head count.
 - Whether `<|pad|>` is actually needed (random-window packing doesn't pad).
