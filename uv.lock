@@ -1888,7 +1888,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "safetensors", specifier = ">=0.4" },
     { name = "tokenizers", specifier = ">=0.20" },
-    { name = "torch", specifier = ">=2.5" },
+    { name = "torch", specifier = ">=2.14" },
     { name = "transformers", marker = "extra == 'export'", specifier = ">=4.45" },
 ]
 provides-extras = ["export", "eval"]

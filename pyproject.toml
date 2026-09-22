@@ -6,7 +6,7 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.11,<3.14"
 dependencies = [
-    "torch>=2.5",
+    "torch>=2.14",  # torch.accelerator memory stats; the version tested on MPS
     "numpy>=1.26",
     "tokenizers>=0.20",
     "datasets>=3.0",
