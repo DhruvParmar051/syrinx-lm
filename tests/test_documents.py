@@ -23,7 +23,7 @@ def test_crlf_and_cr_become_lf() -> None:
 
 
 def test_nfc_composes() -> None:
-    """``"e\\u0301"`` (e + combining acute) becomes ``"\\u00e9"`` (é)."""
+    """``"e\\u0301"`` (e + combining acute) becomes ``"\\u00e9"`` (\u00e9)."""
     assert normalize_text("e\u0301") == "\u00e9"
 
 
@@ -34,7 +34,7 @@ def test_control_chars_removed_but_newline_and_tab_kept() -> None:
 
 def test_text_otherwise_unchanged() -> None:
     """Case, leading/trailing spaces, repeated spaces and emoji are untouched."""
-    text = "  Hello   World 🙂  "
+    text = "  Hello   World \U0001f642  "
     assert normalize_text(text) == text
 
 
@@ -72,7 +72,7 @@ def test_hash_stable_across_processes() -> None:
 
 
 def test_equivalent_texts_hash_equal_after_normalization() -> None:
-    """NFD and NFC forms of "café" differ as raw strings but hash equal once normalized."""
+    """NFD and NFC forms of "caf\u00e9" differ as raw strings but hash equal once normalized."""
     nfd = "cafe\u0301"
     nfc = "caf\u00e9"
     assert nfd != nfc
@@ -111,7 +111,7 @@ def test_split_pinned_assignments() -> None:
 
 
 def test_split_fraction_close_to_target() -> None:
-    """Over 20,000 documents at val_fraction=0.05, the val share is within ±0.006
+    """Over 20,000 documents at val_fraction=0.05, the val share is within \u00b10.006
     (about 4 standard deviations of a binomial proportion)."""
     hashes = _hashes(20_000)
     share = sum(assign_split(h, 0.05) == "val" for h in hashes) / len(hashes)
