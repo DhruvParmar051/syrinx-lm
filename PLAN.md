@@ -1,10 +1,13 @@
-# Syrinx — Execution Plan (local-only, human-written code, AI as reviewer)
+# Syrinx — Execution Plan (local-only; ML pipeline human-written, infrastructure AI-assisted)
 
 ## 0. Operating model
 
-**You** write every line in `src/`, `tests/`, `scripts/`, `configs/`.
-**The AI reviewer** explains, reviews, designs tests, debugs Socratically, and audits experiments.
-This is enforced by a local, untracked reviewer config that also blocks its write access to those directories.
+**You** write the ML pipeline: tokenizer, data pipeline and dataloader, model, training loop
+(optimizer, schedule, accumulation, checkpoint/resume), evaluation and HF export, with their tests.
+**The AI assistant** implements the infrastructure (device utilities, timing, seeding, logging and
+metrics, config, estimates, `configs/`, `scripts/check_env.py`, `scripts/estimate_memory.py`) with
+tests. For the pipeline it explains, reviews, designs tests, stubs files per phase, debugs
+Socratically and audits experiments, but does not write the logic.
 
 ### The loop for every component
 ```
@@ -65,15 +68,13 @@ Effort figures are rough focused-hours for a solo builder. Treat them as a sanit
 **Scaffold (done 2026-09-22):** `pyproject.toml` (hatchling, `src/` layout, extras `export` =
 transformers and `eval` = lm-eval, dev group = pytest + ruff), `uv.lock` refreshed, LICENSE (Apache-2.0),
 README, `docs/` (decisions, data, reference/config-spec), `experiments/log.md`, first commit.
-**Still to do before anything else:** create `src/syrinx/__init__.py` (the editable build needs the package
-to exist), then run `uv sync --all-extras`.
-Build (you): `src/syrinx/utils/device.py` (device resolution, bf16 *probe*,
+Build (infrastructure, AI-implemented, reviewed by you): `src/syrinx/utils/device.py` (device resolution, bf16 *probe*,
 synchronize, memory stats); `src/syrinx/config.py` (typed dataclasses, reject unknown YAML keys,
 analytic `num_parameters`); `src/syrinx/estimate.py` + `scripts/estimate_memory.py`;
 `scripts/check_env.py` (reports MPS/bf16/SDPA status and *measured* matmul TFLOPS).
 Learn: why the MPS fallback env var is dangerous; unified memory; autocast vs full bf16.
-A config spec (fields, validation rules, param-count formula, test list) is in
-`docs/reference/config-spec.md`. There's no reference code. Write your own, then check it against the spec.
+The config spec (fields, validation rules, param-count formula, test list) is in
+`docs/reference/config-spec.md`; review `config.py` against it.
 **Gate 0:** `check_env.py` output saved to `experiments/env.txt`; the param-count tests pin
 11,798,784 / 50,866,688 / 124,275,456; `uv run pytest` is green.
 
