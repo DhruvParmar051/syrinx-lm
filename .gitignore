@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store
+
+# Large / generated artifacts — never commit these
+data_cache/
+checkpoints/
+runs/
+wandb/
+*.bin
+*.safetensors
+*.pt
+*.npy
+*.parquet
+tokenizer/artifacts/
+
+# Secrets
+.env

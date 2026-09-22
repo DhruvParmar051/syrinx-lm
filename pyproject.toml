@@ -1,0 +1,43 @@
+[project]
+name = "syrinx-lm"
+version = "0.0.1"
+description = "A GPT-style decoder-only language model built from scratch in PyTorch (10M -> 50M -> 125M), exported as a Llama-compatible checkpoint."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+    "torch>=2.5",
+    "numpy>=1.26",
+    "tokenizers>=0.20",
+    "datasets>=3.0",
+    "huggingface-hub>=0.25",
+    "safetensors>=0.4",
+    "pyyaml>=6.0",
+    "psutil>=5.9",
+]
+
+[project.optional-dependencies]
+# Phase 9: HF export + logit-parity test against LlamaForCausalLM.
+export = ["transformers>=4.45"]
+# Phase 8: benchmarks via lm-evaluation-harness.
+eval = ["lm-eval>=0.4"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/syrinx"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
