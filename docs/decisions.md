@@ -83,7 +83,7 @@ into tokenizer training.
 **Decision:** One function decides the split for every stage: `assign_split(document_hash(normalize_text(doc)))`
 in `src/syrinx/data/documents.py`. The hash is SHA-256 of the normalized text; the split re-hashes it with
 the salt `syrinx-split-v1` and sends a document to val iff the first 8 bytes / 2^64 < `val_fraction`.
-The same `val_fraction` must be used in Phase 1 and Phase 2 (record the value here once chosen).
+The same `val_fraction` must be used in Phase 1 and Phase 2 (0.005, see the 2026-10-11 entry).
 **Why:** Deterministic on any machine and in any order, needs no stored state, and identical documents
 always share a split. Python's `hash()` is randomized per process (verified: two runs gave different
 values for the same string), so it is never used.
@@ -110,12 +110,22 @@ text needs more tokens, and the space before a number becomes its own token (" 2
 Must be fixed before the 32K tokenizer is trained; changing it later means retraining it and every shard.
 **Revisit if:** Phase 1's bytes/token on held-out text is clearly worse than GPT-2 because of numbers.
 
+## 2026-10-11 — val_fraction 0.005; tokenizer trained on 1.5 GB of FineWeb-Edu sample-10BT
+**Context:** Phase 1 needs the split fraction (shared with Phase 2) and a tokenizer corpus.
+**Decision:** `val_fraction = 0.005`. The tokenizer is trained on the first ~1.5 GB (UTF-8, after
+normalization) of TRAIN-split, exact-deduplicated documents streamed from `HuggingFaceFW/fineweb-edu`,
+subset `sample-10BT`. These are the defaults in `scripts/train_tokenizer.py`.
+**Why:** 0.5% of a multi-million-document sample is tens of thousands of validation documents, enough
+for a stable val loss, while losing little training data. FineWeb-Edu is the 50M/125M corpus; 1.5 GB is
+in the PLAN's 1-2 GB range. TinyStories is left out to keep one source; its bytes/token is still
+measured in Gate 1.
+**Revisit if:** the license check on the dataset card fails, or Gate 1 shows TinyStories compresses
+much worse than FineWeb-Edu.
+
 ---
 
 ## Open (not yet decided — decide before Phase 5)
 - Global batch in tokens/step (starting point ~0.25M for 50M, ~0.5M for 125M).
 - Peak LR, min LR, warmup steps, weight decay, AdamW betas/eps.
 - Validation token count and eval interval.
-- `val_fraction` for the document split (same value in Phases 1 and 2).
-- Tokenizer training corpus (FineWeb-Edu only, or a mix with TinyStories) and size (~1-2 GB).
 - Whether `<|pad|>` is actually needed (random-window packing doesn't pad).
