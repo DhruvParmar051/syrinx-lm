@@ -54,3 +54,30 @@ quoted in the entry. If it can't be traced, it doesn't go in.
 
 ## Known-good resume command
 _(fill in once Phase 4 resume works: the exact command, checkpoint path pattern, and the date it was verified)_
+
+## EXP-002 — Train the 32K byte-level BPE tokenizer (Phase 1)
+- Date: 2026-10-11
+- Git SHA: f3523f6 (clean)
+- Command: `time uv run python scripts/train_tokenizer.py` (all defaults)
+- Raw output: [`tokenizer-train-2026-10-11.txt`](tokenizer-train-2026-10-11.txt)
+- Data: `HuggingFaceFW/fineweb-edu`, subset `sample-10BT`, revision
+  `87f09149ef4734204d70ed1d046ddc9ca3f2b8f9`, `val_fraction` 0.005, split salt `syrinx-split-v1`
+- Settings: vocab 32,768, `min_frequency` 2, digits split individually, no prefix space
+- Hardware state: AC power (stated by Dhruv; not captured in the output)
+- Metrics (source: raw output above):
+  - documents seen 317,847 = 0 empty + 134 exact duplicates + 1,553 val + 316,160 train
+  - val share 1,553 / 317,713 unique = 0.489% (target 0.5%; expected ~1,589 +/- 40)
+  - train text 1,500,059,862 UTF-8 bytes; 1,733,679 distinct pre-tokens; 32,510 merges
+  - wall-clock 5:19 total, of which ~5:02 streaming/selection and ~14 s BPE training
+- Output: `tokenizer/syrinx-bpe-32k/tokenizer.json`, 2,328,481 bytes,
+  SHA-256 `0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8`
+- Checks after loading the file (2026-10-11): SHA-256 matches; vocab exactly 32,768;
+  `<|endoftext|>` = 0, `<|pad|>` = 1; the only vocab entries containing a digit are `0`-`9`;
+  exact round-trip on four probe strings (English, numbers, accents/CJK/emoji, a literal
+  `<|endoftext|>`).
+- Observations: the 100 MB smoke run took ~40 s; this run scaled roughly linearly with data and
+  is dominated by streaming, not training.
+- Caveats: peak memory not measured. Round-trip so far only on probe strings; Gate 1 still needs
+  round-trip on held-out val documents, bytes/token on held-out FineWeb-Edu and TinyStories, and
+  the GPT-2 comparison. One timed 100 MB smoke run (not this one) did not exit after finishing
+  (a download retry was in flight); cause unconfirmed.
