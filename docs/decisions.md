@@ -99,6 +99,17 @@ and record its SHA-256, the training-data description (dataset, subset, bytes, d
 dependency checkable. The HF release ships the same file.
 **Revisit if:** the file grows too large for comfortable git use.
 
+## 2026-10-11 — Split digits individually in the tokenizer
+**Context:** The GPT-2 split pattern keeps digit runs together, so BPE learns arbitrary number chunks
+(on a number-heavy test corpus it learned space + "19" + "9" + "9" for " 1999").
+**Decision:** Pre-tokenizer = `Sequence[Digits(individual_digits=True), ByteLevel(add_prefix_space=False,
+use_regex=True)]`. Every digit is one token; no merge contains a digit.
+**Why:** Numbers tokenize the same way everywhere, which helps arithmetic and copying numbers; Llama and
+PaLM do the same. It loads in HF `PreTrainedTokenizerFast` like any `tokenizer.json`. Cost: number-heavy
+text needs more tokens, and the space before a number becomes its own token (" 2026" is 5 tokens).
+Must be fixed before the 32K tokenizer is trained; changing it later means retraining it and every shard.
+**Revisit if:** Phase 1's bytes/token on held-out text is clearly worse than GPT-2 because of numbers.
+
 ---
 
 ## Open (not yet decided — decide before Phase 5)
