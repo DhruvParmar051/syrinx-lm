@@ -81,3 +81,34 @@ _(fill in once Phase 4 resume works: the exact command, checkpoint path pattern,
   round-trip on held-out val documents, bytes/token on held-out FineWeb-Edu and TinyStories, and
   the GPT-2 comparison. One timed 100 MB smoke run (not this one) did not exit after finishing
   (a download retry was in flight); cause unconfirmed.
+
+## EXP-003 — Gate 1 tokenizer evaluation on held-out text
+- Date: 2026-10-11
+- Git SHA: 9ea43f8 (clean)
+- Command: `time uv run python scripts/eval_tokenizer.py` (all defaults)
+- Raw output: [`tokenizer-eval-2026-10-11.txt`](tokenizer-eval-2026-10-11.txt)
+- Tokenizer: `tokenizer/syrinx-bpe-32k/tokenizer.json`, SHA-256
+  `0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8` (EXP-002)
+- Reference: GPT-2 tokenizer, `openai-community/gpt2` at commit
+  `607a30d783dfa663caf39e06633721c8d4cfcd7e` (50,257 tokens)
+- Held-out corpora:
+  - `fineweb_edu_val`: the first 1,000 FineWeb-Edu `sample-10BT` documents (revision
+    `87f09149ef4734204d70ed1d046ddc9ca3f2b8f9`) that the content-hash split assigns to val
+    (`val_fraction` 0.005), i.e. never used for tokenizer training
+  - `tinystories_val`: the first 1,000 stories of the TinyStories `validation` split (revision
+    `f54c09fd23315a6f9c86f9dc80f725de7d8f9c64`), a corpus the tokenizer never saw
+- Hardware state: AC power (stated by Dhruv; not captured in the output)
+- Metrics (source: raw output above):
+
+  | corpus | docs | UTF-8 bytes | Syrinx tokens | GPT-2 tokens | Syrinx B/tok | GPT-2 B/tok | Syrinx / GPT-2 tokens | round-trip failures |
+  |---|---|---|---|---|---|---|---|---|
+  | fineweb_edu_val | 1,000 | 4,560,949 | 1,021,215 | 981,362 | 4.466 | 4.648 | 1.041 | 0 |
+  | tinystories_val | 1,000 | 792,375 | 198,686 | 193,559 | 3.988 | 4.094 | 1.026 | 0 |
+
+  Wall-clock 3:29 total (mostly streaming).
+- Observations: 100% exact round-trip (with and without EOS) on all 2,000 held-out documents.
+  Syrinx needs 4.1% more tokens than GPT-2 on FineWeb-Edu val and 2.6% more on TinyStories val.
+  (The prediction before the run was "about equal or fewer" on FineWeb-Edu; that was wrong.)
+- Caveats: 1,000 documents per corpus, single run. The cause of the gap is not measured; candidate
+  explanations are the smaller vocabulary (32,768 vs 50,257) and digit splitting. Per-token losses
+  of Syrinx and GPT-2 are not comparable; use bits per byte with these bytes/token values.

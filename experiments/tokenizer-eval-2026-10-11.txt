@@ -1,0 +1,6 @@
+# Output of the Gate 1 tokenizer evaluation (copied from the terminal, HTTP log lines trimmed).
+# Command: time uv run python scripts/eval_tokenizer.py
+# Git SHA: 9ea43f8 (clean)
+
+{"corpora": {"fineweb_edu_val": {"bytes": 4560949, "bytes_per_token": 4.466198596769535, "docs": 1000, "reference_bytes_per_token": 4.647570417440251, "reference_tokens": 981362, "relative_tokens": 1.0406098870753095, "roundtrip_failures": 0, "tokens": 1021215}, "tinystories_val": {"bytes": 792375, "bytes_per_token": 3.98807666368038, "docs": 1000, "reference_bytes_per_token": 4.093713028068961, "reference_tokens": 193559, "relative_tokens": 1.0264880475720581, "roundtrip_failures": 0, "tokens": 198686}}, "max_docs": 1000, "reference": "openai-community/gpt2", "reference_revision": "607a30d783dfa663caf39e06633721c8d4cfcd7e", "tokenizer": "tokenizer/syrinx-bpe-32k/tokenizer.json", "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8", "val_fraction": 0.005}
+uv run python scripts/eval_tokenizer.py  83.31s user 3.08s system 41% cpu 3:29.02 total
