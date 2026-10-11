@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_DATASET = "HuggingFaceFW/fineweb-edu"
 DEFAULT_SUBSET = "sample-10BT"
+DEFAULT_REVISION = "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9"
+"""Dataset commit on the Hub (card checked 2026-10-11, docs/data.md). Pinned so the
+tokenizer and the Phase 2 shards read exactly the same documents."""
 DEFAULT_TEXT_FIELD = "text"
 DEFAULT_VAL_FRACTION = 0.005
 """Must equal the value Phase 2 uses (docs/decisions.md)."""
@@ -54,7 +57,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse CLI arguments.
 
     Options and defaults: ``--dataset`` (DEFAULT_DATASET), ``--subset``
-    (DEFAULT_SUBSET), ``--text-field`` (DEFAULT_TEXT_FIELD), ``--val-fraction``
+    (DEFAULT_SUBSET), ``--revision`` (DEFAULT_REVISION), ``--text-field``
+    (DEFAULT_TEXT_FIELD), ``--val-fraction``
     (DEFAULT_VAL_FRACTION, float), ``--max-bytes`` (DEFAULT_MAX_BYTES; accepts
     scientific notation like ``1.5e9`` and is stored as an ``int``), ``--vocab-size``
     (VOCAB_SIZE, int), ``--min-frequency`` (2, int), ``--out`` (DEFAULT_OUT, a
@@ -64,12 +68,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         argv: Argument list (defaults to ``sys.argv[1:]``).
 
     Returns:
-        Namespace with ``dataset``, ``subset``, ``text_field``, ``val_fraction``,
-        ``max_bytes``, ``vocab_size``, ``min_frequency`` and ``out``.
+        Namespace with ``dataset``, ``subset``, ``revision``, ``text_field``,
+        ``val_fraction``, ``max_bytes``, ``vocab_size``, ``min_frequency`` and ``out``.
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", default=DEFAULT_DATASET)
     parser.add_argument("--subset", default=DEFAULT_SUBSET)
+    parser.add_argument("--revision", default=DEFAULT_REVISION)
     parser.add_argument("--text-field", default=DEFAULT_TEXT_FIELD)
     parser.add_argument("--val-fraction", type=float, default=DEFAULT_VAL_FRACTION)
     parser.add_argument("--max-bytes", type=lambda s: int(float(s)), default=DEFAULT_MAX_BYTES)
@@ -79,10 +84,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def stream_texts(dataset: str, subset: str | None, text_field: str) -> Iterator[str]:
+def stream_texts(dataset: str, subset: str | None, text_field: str, revision: str) -> Iterator[str]:
     """Stream raw document texts from a Hugging Face dataset.
 
-    Calls ``load_dataset(dataset, name=subset, split="train", streaming=True)`` (the
+    Calls ``load_dataset(dataset, name=subset, split="train", streaming=True,
+    revision=revision)`` (the
     module-level name, so tests can replace it) and yields ``row[text_field]`` for
     each row. Streaming downloads lazily: stopping the iteration stops the download.
     Check the dataset's license on its card and record it in docs/data.md first.
@@ -91,6 +97,7 @@ def stream_texts(dataset: str, subset: str | None, text_field: str) -> Iterator[
         dataset: HF dataset id.
         subset: Config/subset name, or None.
         text_field: Name of the text column.
+        revision: Dataset commit to read (a pinned commit hash; never a branch name).
 
     Yields:
         Raw document texts.
@@ -98,7 +105,7 @@ def stream_texts(dataset: str, subset: str | None, text_field: str) -> Iterator[
     Raises:
         KeyError: If a row has no ``text_field`` column (message names the column).
     """
-    for row in load_dataset(dataset, name=subset, split="train", streaming=True):
+    for row in load_dataset(dataset, name=subset, split="train", streaming=True, revision=revision):
         if text_field not in row:
             raise KeyError(f"Row has no {text_field!r} column; columns: {sorted(row)}")
         yield row[text_field]
@@ -173,7 +180,7 @@ def main(argv: list[str] | None = None) -> int:
     ``select_train_texts`` (with a :class:`SelectionStats`) -> ``train_tokenizer``
     -> ``save_tokenizer``; print ONE line of JSON (``json.dumps(..., sort_keys=True)``)
     to stdout with keys: ``out`` (str), ``sha256``, ``dataset``, ``subset``,
-    ``text_field``, ``val_fraction``, ``max_bytes``, ``vocab_size``,
+    ``revision``, ``text_field``, ``val_fraction``, ``max_bytes``, ``vocab_size``,
     ``min_frequency``, ``split_salt`` (SPLIT_SALT) and ``stats`` (the
     SelectionStats as a dict). Call ``stream_texts`` and ``train_tokenizer`` by their
     module-level names (tests replace them).
@@ -193,7 +200,7 @@ def main(argv: list[str] | None = None) -> int:
         raise FileExistsError(f"Refusing to overwrite {args.out}.")
     stats = SelectionStats()
     texts = select_train_texts(
-        stream_texts(args.dataset, args.subset, args.text_field),
+        stream_texts(args.dataset, args.subset, args.text_field, args.revision),
         args.val_fraction,
         args.max_bytes,
         stats=stats,
@@ -208,6 +215,7 @@ def main(argv: list[str] | None = None) -> int:
         "sha256": sha256,
         "dataset": args.dataset,
         "subset": args.subset,
+        "revision": args.revision,
         "text_field": args.text_field,
         "val_fraction": args.val_fraction,
         "max_bytes": args.max_bytes,

@@ -5,6 +5,7 @@ No network: ``load_dataset`` and ``stream_texts`` are replaced with in-memory fa
 
 import importlib.util
 import json
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from types import ModuleType
@@ -42,6 +43,9 @@ DOCS: list[str] = [
 
 SMALL_VOCAB = 300
 
+PINNED_REVISION = "87f09149ef4734204d70ed1d046ddc9ca3f2b8f9"
+"""FineWeb-Edu commit recorded in docs/data.md (checked 2026-10-11)."""
+
 
 @pytest.fixture(scope="module")
 def script() -> ModuleType:
@@ -70,6 +74,7 @@ def test_parse_args_defaults(script: ModuleType) -> None:
     args = script.parse_args([])
     assert args.dataset == "HuggingFaceFW/fineweb-edu"
     assert args.subset == "sample-10BT"
+    assert args.revision == PINNED_REVISION
     assert args.text_field == "text"
     assert args.val_fraction == 0.005
     assert args.max_bytes == 1_500_000_000
@@ -87,6 +92,8 @@ def test_parse_args_overrides(script: ModuleType) -> None:
             "d",
             "--subset",
             "s",
+            "--revision",
+            "r",
             "--text-field",
             "body",
             "--val-fraction",
@@ -101,7 +108,7 @@ def test_parse_args_overrides(script: ModuleType) -> None:
             "x/t.json",
         ]
     )
-    assert (args.dataset, args.subset, args.text_field) == ("d", "s", "body")
+    assert (args.dataset, args.subset, args.revision, args.text_field) == ("d", "s", "r", "body")
     assert args.val_fraction == 0.1
     assert args.max_bytes == 2_000_000_000
     assert isinstance(args.max_bytes, int)
@@ -116,13 +123,22 @@ def test_parse_args_rejects_bad_max_bytes(script: ModuleType, bad: str) -> None:
         script.parse_args(["--max-bytes", bad])
 
 
+def test_default_revision_is_a_commit_hash(script: ModuleType) -> None:
+    """The default revision is a full 40-hex commit hash, never a moving branch like
+    "main"; it is the commit recorded in docs/data.md."""
+    assert re.fullmatch(r"[0-9a-f]{40}", script.DEFAULT_REVISION)
+    assert script.DEFAULT_REVISION == PINNED_REVISION
+    assert PINNED_REVISION in (ROOT / "docs" / "data.md").read_text(encoding="utf-8")
+
+
 # --- stream_texts ---------------------------------------------------------------------
 
 
 def test_stream_texts_calls_load_dataset_streaming(
     script: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Loads split "train" with streaming=True and yields the text column in order."""
+    """Loads split "train" with streaming=True at the given revision and yields the text
+    column in order."""
     calls: list[tuple[tuple[Any, ...], dict[str, Any]]] = []
 
     def fake_load_dataset(*args: Any, **kwargs: Any) -> list[dict[str, Any]]:
@@ -130,11 +146,11 @@ def test_stream_texts_calls_load_dataset_streaming(
         return [{"text": "a", "id": 1}, {"text": "b", "id": 2}]
 
     monkeypatch.setattr(script, "load_dataset", fake_load_dataset)
-    assert list(script.stream_texts("org/ds", "sub", "text")) == ["a", "b"]
+    assert list(script.stream_texts("org/ds", "sub", "text", "rev1")) == ["a", "b"]
     assert len(calls) == 1
     args, kwargs = calls[0]
     assert args == ("org/ds",)
-    assert kwargs == {"name": "sub", "split": "train", "streaming": True}
+    assert kwargs == {"name": "sub", "split": "train", "streaming": True, "revision": "rev1"}
 
 
 def test_stream_texts_missing_field_raises(
@@ -143,7 +159,7 @@ def test_stream_texts_missing_field_raises(
     """A row without the text column raises KeyError naming the column."""
     monkeypatch.setattr(script, "load_dataset", lambda *a, **k: [{"content": "a"}])
     with pytest.raises(KeyError, match="body"):
-        list(script.stream_texts("org/ds", None, "body"))
+        list(script.stream_texts("org/ds", None, "body", "rev1"))
 
 
 # --- select_train_texts ---------------------------------------------------------------
@@ -301,6 +317,7 @@ def test_main_end_to_end(
     assert summary["split_salt"] == SPLIT_SALT
     assert summary["dataset"] == "HuggingFaceFW/fineweb-edu"
     assert summary["subset"] == "sample-10BT"
+    assert summary["revision"] == PINNED_REVISION
     assert summary["text_field"] == "text"
     assert summary["max_bytes"] == 1_500_000_000
     stats = summary["stats"]
@@ -331,17 +348,19 @@ def test_main_trains_only_on_train_split(
 def test_main_passes_stream_settings(
     script: ModuleType, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    """--dataset, --subset and --text-field reach stream_texts."""
-    calls: list[tuple[str, str | None, str]] = []
+    """--dataset, --subset, --text-field and --revision reach stream_texts."""
+    calls: list[tuple[str, str | None, str, str]] = []
 
-    def fake_stream(dataset: str, subset: str | None, text_field: str) -> Iterator[str]:
-        calls.append((dataset, subset, text_field))
+    def fake_stream(
+        dataset: str, subset: str | None, text_field: str, revision: str
+    ) -> Iterator[str]:
+        calls.append((dataset, subset, text_field, revision))
         return iter(DOCS)
 
     monkeypatch.setattr(script, "stream_texts", fake_stream)
     argv = [*_main_args(tmp_path / "t.json"), "--dataset", "d", "--subset", "s"]
-    script.main([*argv, "--text-field", "body"])
-    assert calls == [("d", "s", "body")]
+    script.main([*argv, "--text-field", "body", "--revision", "r"])
+    assert calls == [("d", "s", "body", "r")]
 
 
 def test_main_refuses_existing_output_before_streaming(

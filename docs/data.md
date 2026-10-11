@@ -8,7 +8,7 @@ with the date it was checked. Leave a field blank rather than filling it from me
 | Dataset | HF repo id | Subset / config | License (from card) | Checked on | Used for | Notes |
 |---|---|---|---|---|---|---|
 | TinyStories | _verify_ | — | _verify on card_ | | 10M model; tokenizer eval | |
-| FineWeb-Edu | `HuggingFaceFW/fineweb-edu` | `sample-10BT` | ODC-By v1.0; also subject to the Common Crawl Terms of Use | 2026-10-11 | tokenizer training; 50M/125M | not gated; card revision `87f09149ef47` (last modified 2025-07-11); `sample-10BT` train split has 9,672,101 rows; text column `text` |
+| FineWeb-Edu | `HuggingFaceFW/fineweb-edu` | `sample-10BT` | ODC-By v1.0; also subject to the Common Crawl Terms of Use | 2026-10-11 | tokenizer training; 50M/125M | not gated; dataset revision (commit) `87f09149ef4734204d70ed1d046ddc9ca3f2b8f9` (last modified 2025-07-11); `sample-10BT` train split has 9,672,101 rows; text column `text` |
 
 ## License obligations
 - **FineWeb-Edu (ODC-By v1.0):** attribution is required. The model card and README must credit
