@@ -19,6 +19,7 @@ from syrinx.tokenizer import (
     bytes_per_token,
     decode,
     encode_document,
+    encode_documents,
     file_sha256,
     load_tokenizer,
     save_tokenizer,
@@ -321,3 +322,51 @@ def test_bytes_per_token_empty_raises(tok: Tokenizer, texts: list[str]) -> None:
     """No tokens at all raises ValueError instead of dividing by zero."""
     with pytest.raises(ValueError):
         bytes_per_token(tok, texts)
+
+
+# --- batched encoding -----------------------------------------------------------------
+
+BATCH_TEXTS: list[str] = [
+    *CORPUS[:20],
+    "",
+    "numbers: 2026, 3.14, -42",
+    f"literal {EOS_TOKEN} and {PAD_TOKEN} inside",
+    "caf\u00e9 \u65e5\u672c \U0001f642 \U0001f468\u200d\U0001f469\u200d\U0001f467",
+    " leading space\nand\ttabs ",
+]
+
+
+def test_encode_documents_matches_encode_document(tok: Tokenizer) -> None:
+    """Batched ids equal per-document ids (without EOS), document by document, including
+    empty text, digits, emoji and literal special-token strings."""
+    expected = [encode_document(tok, t, append_eos=False) for t in BATCH_TEXTS]
+    assert encode_documents(tok, BATCH_TEXTS) == expected
+
+
+def test_encode_documents_no_eos_and_no_specials(tok: Tokenizer) -> None:
+    """No id 0 or 1 appears: EOS is not appended and literal special strings stay text."""
+    ids = encode_documents(tok, BATCH_TEXTS)
+    assert all(0 not in doc and 1 not in doc for doc in ids)
+
+
+def test_encode_documents_empty_list(tok: Tokenizer) -> None:
+    """No documents gives no id lists."""
+    assert encode_documents(tok, []) == []
+
+
+@pytest.mark.parametrize("initial", [False, True])
+def test_encode_documents_restores_setting(tok: Tokenizer, initial: bool) -> None:
+    """``encode_special_tokens`` is restored to its previous value."""
+    tok.encode_special_tokens = initial
+    try:
+        encode_documents(tok, [f"x {EOS_TOKEN} y"])
+        assert tok.encode_special_tokens is initial
+    finally:
+        tok.encode_special_tokens = False
+
+
+def test_encode_documents_returns_plain_lists(tok: Tokenizer) -> None:
+    """The result is a list of lists of Python ints (not Encoding objects)."""
+    ids = encode_documents(tok, ["the dog", "a fox"])
+    assert isinstance(ids, list) and all(isinstance(doc, list) for doc in ids)
+    assert all(isinstance(i, int) for doc in ids for i in doc)

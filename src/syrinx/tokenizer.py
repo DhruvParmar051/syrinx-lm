@@ -204,6 +204,30 @@ def encode_document(tokenizer: Tokenizer, text: str, append_eos: bool = True) ->
     return ids
 
 
+def encode_documents(tokenizer: Tokenizer, texts: list[str]) -> list[list[int]]:
+    """Encode many documents at once (multi-threaded), WITHOUT appending EOS.
+
+    Must return exactly ``[encode_document(tokenizer, t, append_eos=False) for t in
+    texts]``, only faster: use ``tokenizer.encode_batch`` with ``encode_special_tokens``
+    switched on for the call and restored afterwards (even if encoding raises), exactly
+    like :func:`encode_document`. The shard writer appends EOS itself.
+
+    Args:
+        tokenizer: Trained tokenizer.
+        texts: Document texts (already normalized).
+
+    Returns:
+        One id list per document, in input order (``[]`` for no documents).
+    """
+    previous = tokenizer.encode_special_tokens
+    try:
+        tokenizer.encode_special_tokens = True
+        encodings = tokenizer.encode_batch(texts)
+    finally:
+        tokenizer.encode_special_tokens = previous
+    return [list(encoding.ids) for encoding in encodings]
+
+
 def decode(tokenizer: Tokenizer, ids: list[int]) -> str:
     """Decode ids to text, KEEPING special tokens (``skip_special_tokens=False``).
 
