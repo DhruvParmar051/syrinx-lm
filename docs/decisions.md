@@ -124,8 +124,38 @@ much worse than FineWeb-Edu.
 
 ---
 
+## 2026-10-11 — Phase 2 data pipeline design
+**Context:** Phase 2 turns streamed text into training shards; Gate 1 requires that the shards use
+exactly the document path the tokenizer was trained with.
+**Decision:**
+- One document path, `syrinx.data.selection.iter_documents`: normalize -> skip empty -> exact dedup
+  (content hash) -> drop documents shorter than **200 characters** after normalization -> content-hash
+  split (`val_fraction` 0.005, salt `syrinx-split-v1`). With the length filter off it selects exactly
+  the tokenizer script's train documents (tested).
+- **FineWeb-Edu** (`sample-10BT`, pinned revision): stop once the train shards hold **2.5B tokens**
+  (EOS included); val is whatever the split assigns along the way (~0.5%, ~12.5M tokens expected).
+- **TinyStories:** **all** of it. The official `train` and `validation` splits are pooled and
+  re-split with the same content hash, so every source follows one leakage rule.
+- Shards: flat `uint16` files, `ids(doc) + EOS` per document, ~100M tokens per file, a document never
+  spans two files, written to a temp name and renamed; a JSON sidecar records counts and provenance.
+  Layout `data_cache/tokens/<source>/<split>/<split>_NNNN.bin`.
+- Loader: train = uniform random windows of T+1 tokens over all valid starts (never crossing a
+  shard), from a seeded `np.random.Generator` whose state is checkpointed; val = fixed,
+  non-overlapping windows.
+- No attention mask at document boundaries (EOS separates documents); no BOS token (the HF export
+  will set `bos_token_id` to the EOS id).
+**Why:** one selection rule means Gate 2's overlap check and Gate 1's train-only guarantee refer to
+the same sets. FineWeb-Edu is already quality-filtered upstream, so only very short fragments are
+dropped. `uint16` halves disk since V = 32,768 < 65,536. A per-window document mask would force a
+non-fused attention path on MPS. Random windows need no epoch bookkeeping; resume needs only the RNG
+state.
+**Revisit if:** the 200-character filter drops a surprising share (check the counts in the build
+summary), or Phase 5 shows boundary effects that a document mask would fix.
+
+---
+
 ## Open (not yet decided — decide before Phase 5)
 - Global batch in tokens/step (starting point ~0.25M for 50M, ~0.5M for 125M).
 - Peak LR, min LR, warmup steps, weight decay, AdamW betas/eps.
 - Validation token count and eval interval.
-- Whether `<|pad|>` is actually needed (random-window packing doesn't pad).
+- Whether `<|pad|>` is actually needed (random-window packing doesn't pad; only batched eval might).
