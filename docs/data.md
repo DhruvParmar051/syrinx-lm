@@ -8,7 +8,13 @@ with the date it was checked. Leave a field blank rather than filling it from me
 | Dataset | HF repo id | Subset / config | License (from card) | Checked on | Used for | Notes |
 |---|---|---|---|---|---|---|
 | TinyStories | _verify_ | — | _verify on card_ | | 10M model; tokenizer eval | |
-| FineWeb-Edu | _verify_ | _e.g. a sample-NBT subset_ | _verify on card_ | | tokenizer training; 50M/125M | |
+| FineWeb-Edu | `HuggingFaceFW/fineweb-edu` | `sample-10BT` | ODC-By v1.0; also subject to the Common Crawl Terms of Use | 2026-10-11 | tokenizer training; 50M/125M | not gated; card revision `87f09149ef47` (last modified 2025-07-11); `sample-10BT` train split has 9,672,101 rows; text column `text` |
+
+## License obligations
+- **FineWeb-Edu (ODC-By v1.0):** attribution is required. The model card and README must credit
+  FineWeb-Edu (Hugging Face) with a link to the dataset and to the license, and note that the data comes
+  from Common Crawl and is subject to the Common Crawl Terms of Use.
+  Source: dataset card, "Licensing Information" section, checked 2026-10-11.
 
 ## Token counts (fill in during Phase 2, from the pipeline log)
 
@@ -28,7 +34,9 @@ with the date it was checked. Leave a field blank rather than filling it from me
 7. **Delete raw text** after tokenizing, once the counts are logged.
 
 ## Tokenizer training data
-- Drawn **only** from the train split (~1–2 GB). Record the exact byte count and document count.
+- Drawn **only** from the train split: the first ~1.5 GB of normalized, exact-deduplicated train-split
+  documents from FineWeb-Edu `sample-10BT`, with `val_fraction = 0.005` (docs/decisions.md, 2026-10-11).
+  Record the exact byte count and document count from the script's JSON summary.
 - Held-out evaluation text (roundtrip, bytes/token) comes from the val split.
 
 ## Leakage and contamination checks
