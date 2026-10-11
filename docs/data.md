@@ -7,7 +7,7 @@ with the date it was checked. Leave a field blank rather than filling it from me
 
 | Dataset | HF repo id | Subset / config | License (from card) | Checked on | Used for | Notes |
 |---|---|---|---|---|---|---|
-| TinyStories | _verify_ | — | _verify on card_ | | 10M model; tokenizer eval | |
+| TinyStories | `roneneldan/TinyStories` | — (splits `train`, `validation`) | CDLA-Sharing-1.0 | 2026-10-11 | 10M model; tokenizer eval | not gated; dataset revision (commit) `f54c09fd23315a6f9c86f9dc80f725de7d8f9c64` (last modified 2024-08-12); `validation` has 21,990 rows, `train` 2,119,719; text column `text` |
 | FineWeb-Edu | `HuggingFaceFW/fineweb-edu` | `sample-10BT` | ODC-By v1.0; also subject to the Common Crawl Terms of Use | 2026-10-11 | tokenizer training; 50M/125M | not gated; dataset revision (commit) `87f09149ef4734204d70ed1d046ddc9ca3f2b8f9` (last modified 2025-07-11); `sample-10BT` train split has 9,672,101 rows; text column `text` |
 
 ## License obligations
@@ -15,6 +15,11 @@ with the date it was checked. Leave a field blank rather than filling it from me
   FineWeb-Edu (Hugging Face) with a link to the dataset and to the license, and note that the data comes
   from Common Crawl and is subject to the Common Crawl Terms of Use.
   Source: dataset card, "Licensing Information" section, checked 2026-10-11.
+- **TinyStories (CDLA-Sharing-1.0):** a share-alike data license. Using the data to train a model
+  is allowed; redistributing the DATA (or modified data) must keep the same license. We do not
+  redistribute it. Credit it in the model card. Source: dataset card metadata, checked 2026-10-11.
+- **GPT-2 tokenizer (`openai-community/gpt2`, MIT, commit `607a30d783dfa663caf39e06633721c8d4cfcd7e`):**
+  used only as a comparison in Gate 1, never shipped.
 
 ## Token counts (fill in during Phase 2, from the pipeline log)
 
