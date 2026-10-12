@@ -33,14 +33,24 @@ Solving `N = V·d + L·(4d² + 3·d·ff + 2d) + d` gives a unique fit with ff a 
 
 | Config | d_model | n_layers | d_ff | n_heads | head_dim |
 |---|---|---|---|---|---|
-| syrinx-10m  | 256 | 4  | 768  | **open** (4 → 64) | — |
+| syrinx-10m  | 256 | 4  | 768  | 4  | 64 |
 | syrinx-50m  | 512 | 10 | 1536 | 8  | 64 |
 | syrinx-125m | 768 | 12 | 2560 | 12 | 64 |
 
 **Why:** The 50m and 125m shapes were confirmed by building HF Llama at these shapes, which produced
 exactly the pinned counts (`experiments/feasibility-2026-09-22.md`). Head count doesn't change the
 param count, so it's a free choice for 10m.
-**Revisit if:** the 10m head count is decided (record it here).
+**Revisit if:** a config's measured throughput or loss suggests a different head count (it does not
+change the param count).
+
+## 2026-10-12 — 10m model uses 4 heads (head_dim 64)
+**Context:** Head count was the one open shape for syrinx-10m (d_model 256); any divisor with an even
+head_dim keeps the pinned 11,798,784 params.
+**Decision:** n_heads = 4, head_dim = 64, as already set in `configs/syrinx-10m.yaml`.
+**Why:** head_dim 64 matches the 50m and 125m models, so the 10m runs exercise the same attention
+shapes (and the same SDPA/MPS kernel path) as the larger models. The Gate 3 tests ran on this config
+(EXP-006).
+**Revisit if:** the 10m model is used for an experiment where head count is the variable.
 
 ## 2026-09-22 — Micro-batch 8 for the 125M run
 **Context:** The proxy benchmark measured 20.1 GiB at mb 8 and 35.2 GiB at mb 16, against a
