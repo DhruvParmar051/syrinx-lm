@@ -154,6 +154,29 @@ summary), or Phase 5 shows boundary effects that a document mask would fix.
 
 ---
 
+## 2026-10-12 — Download source parquet files once and read them locally
+**Context:** the first TinyStories build streamed with `load_dataset(..., streaming=True)` and stalled:
+one HTTP range read of a parquet file trickled at about 3 KB/s (30,744 bytes in 10 s) with 0% CPU,
+and no timeout fired because bytes kept arriving. The connection to Hugging Face from this network
+measured 70-170 KB/s (`curl`) while general download speed was 16.2 Mbps (`networkQuality`), so
+any long streamed build risks a stall that throws away the whole run. Streaming builds also hung
+after finishing (twice in Phase 1/2 smoke runs).
+**Decision:** Phase 2 shard building and checking read through `syrinx.data.sources.iter_hub_texts`:
+list the split's parquet files at the pinned revision, then for each file in sorted order
+`hf_hub_download` it (cached, resumable, retried) and read the text column locally with `pyarrow`.
+Files are fetched lazily, so a FineWeb-Edu build that stops at 2.5B tokens never downloads the
+remaining files. Provenance (dataset, subset, revision) is unchanged. The Phase 1 tokenizer scripts
+keep streaming; they are finished and their results are recorded.
+**Why:** downloads can resume and are kept, so a stall costs only a restart of the transfer, not the
+build, and the build time measures the pipeline rather than the network. Same rows in the same
+order as streaming: on TinyStories `validation` the local read returned the identical 21,990 rows
+in the same order (0.4 s locally vs 9.9 s streamed). The TinyStories build then took 2:40.90 and
+exited normally (EXP-004).
+**Revisit if:** disk space for the FineWeb-Edu `sample-10BT` files becomes a problem (14 files,
+0.54-2.15 GB each, 28.5 GB in total per the Hub file listing at the pinned revision, 2026-10-12), or a source is not published as parquet.
+
+---
+
 ## Open (not yet decided — decide before Phase 5)
 - Global batch in tokens/step (starting point ~0.25M for 50M, ~0.5M for 125M).
 - Peak LR, min LR, warmup steps, weight decay, AdamW betas/eps.

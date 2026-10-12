@@ -21,22 +21,37 @@ with the date it was checked. Leave a field blank rather than filling it from me
 - **GPT-2 tokenizer (`openai-community/gpt2`, MIT, commit `607a30d783dfa663caf39e06633721c8d4cfcd7e`):**
   used only as a comparison in Gate 1, never shipped.
 
-## Token counts (fill in during Phase 2, from the pipeline log)
+## Token counts (from the build summaries)
 
-| Dataset | Split | Documents | Tokens | Bytes (raw UTF-8) | Source log |
+Tokens include one EOS per document. Raw UTF-8 bytes were not measured by the build.
+
+| Dataset | Split | Documents | Tokens | Shards | Source log |
 |---|---|---|---|---|---|
-| | train | | | | |
-| | val | | | | |
+| TinyStories | train | 1,805,471 | 411,455,118 | 5 | EXP-004, [`shards-tinystories-build-2026-10-12.txt`](../experiments/shards-tinystories-build-2026-10-12.txt) |
+| TinyStories | val | 9,122 | 2,074,361 | 1 | EXP-004 (same file) |
+| FineWeb-Edu | train | | | | |
+| FineWeb-Edu | val | | | | |
 
 ## Pipeline rules
-1. **Stream**: don't download the full raw corpus to disk.
-2. **Normalize**: Unicode NFC; strip control characters except `\n` and `\t`. _(Record the exact set.)_
-3. **Exact dedup**: hash the normalized document text. _(Record the hash function and how many documents were dropped.)_
-4. **Quality/length filter**: _(record thresholds and drop counts)_.
+1. **Download once, read locally** (Phase 2 shard builds and checks, `syrinx.data.sources`): each
+   parquet file of a split is fetched at the pinned revision with `hf_hub_download` into the local
+   HF cache (outside the repo), one file at a time and only when the reader reaches it, then read
+   with `pyarrow`. File order is the sorted repo paths, the same order as Hub streaming. Only the
+   files actually read are downloaded, not the whole corpus. (Phase 1 tokenizer training and
+   evaluation streamed from the Hub; see docs/decisions.md, 2026-10-12.)
+2. **Normalize** (`syrinx.data.documents.normalize_text`): `\r\n` and lone `\r` become `\n`; Unicode
+   NFC; remove every character in Unicode category `Cc` except `\n` and `\t`. No lowercasing,
+   whitespace collapsing or stripping.
+3. **Exact dedup**: SHA-256 of the UTF-8 bytes of the normalized text; later copies are dropped.
+   TinyStories: 326,842 of 2,141,709 documents dropped (15.3%, EXP-004).
+4. **Length filter**: drop documents under 200 characters after normalization. Empty documents are
+   counted separately. TinyStories: 44 too short, 230 empty (EXP-004).
 5. **Split at the document level**, **before** tokenization and packing. The split has to be
    deterministic, e.g. from a hash of the document, so it's reproducible without keeping state.
 6. **Tokenize** → `uint16` memmap shards, with an EOS separator (`<|endoftext|>`) between documents.
-7. **Delete raw text** after tokenizing, once the counts are logged.
+7. **Raw text** stays only in the HF cache, never in the repo or `data_cache/tokens`. It can be
+   deleted once the counts are logged, but `check_shards.py`'s source round-trip reads it again
+   (it would re-download).
 
 ## Tokenizer training data
 - Drawn **only** from the train split: the first ~1.5 GB of normalized, exact-deduplicated train-split
@@ -47,6 +62,6 @@ with the date it was checked. Leave a field blank rather than filling it from me
 ## Leakage and contamination checks
 | Check | Method | Result | Evidence |
 |---|---|---|---|
-| Train/val doc overlap | hash sets of normalized docs; intersection must be empty | | |
+| Train/val doc overlap | SHA-256 of each document's token ids in the train and val shards (equivalent to the text, since the tokenizer round-trips exactly); intersection must be empty | TinyStories: 0 of 1,805,471 train / 9,122 val | EXP-004, [`shards-tinystories-check-2026-10-12.txt`](../experiments/shards-tinystories-check-2026-10-12.txt) |
 | Tokenizer trained on train only | the list of shards used by the tokenizer script | | |
 | Benchmark contamination (Phase 8) | 13-gram overlap between benchmark test sets and train shards | | |
