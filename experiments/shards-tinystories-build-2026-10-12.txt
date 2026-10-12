@@ -1,0 +1,10 @@
+2026-10-12 12:41:10 INFO    httpx: HTTP Request: GET https://huggingface.co/api/datasets/roneneldan/TinyStories/tree/f54c09fd23315a6f9c86f9dc80f725de7d8f9c64?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-10-12 12:41:10 INFO    syrinx.data.sources: Reading roneneldan/TinyStories train file 1/4: data/train-00000-of-00004-2d5a1467fff1081b.parquet
+2026-10-12 12:41:53 INFO    syrinx.data.sources: Reading roneneldan/TinyStories train file 2/4: data/train-00001-of-00004-5852b56a2bd28fd9.parquet
+2026-10-12 12:42:33 INFO    syrinx.data.sources: Reading roneneldan/TinyStories train file 3/4: data/train-00002-of-00004-a26307300439e943.parquet
+2026-10-12 12:43:11 INFO    syrinx.data.sources: Reading roneneldan/TinyStories train file 4/4: data/train-00003-of-00004-d243063613e5a057.parquet
+2026-10-12 12:43:49 INFO    httpx: HTTP Request: GET https://huggingface.co/api/datasets/roneneldan/TinyStories/tree/f54c09fd23315a6f9c86f9dc80f725de7d8f9c64?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-10-12 12:43:49 INFO    syrinx.data.sources: Reading roneneldan/TinyStories validation file 1/1: data/validation-00000-of-00001-869c898b519ad725.parquet
+{"dataset": "roneneldan/TinyStories", "min_chars": 200, "revision": "f54c09fd23315a6f9c86f9dc80f725de7d8f9c64", "shard_tokens": 100000000, "source": "tinystories", "split_salt": "syrinx-split-v1", "splits": {"train": {"docs": 1805471, "shards": ["train_0000.bin", "train_0001.bin", "train_0002.bin", "train_0003.bin", "train_0004.bin"], "tokens": 411455118}, "val": {"docs": 9122, "shards": ["val_0000.bin"], "tokens": 2074361}}, "stats": {"duplicates": 326842, "empty": 230, "seen": 2141709, "too_short": 44, "train_docs": 1805471, "val_docs": 9122}, "subset": null, "tokenizer": "tokenizer/syrinx-bpe-32k/tokenizer.json", "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8", "train_tokens": null, "val_fraction": 0.005}
+uv run python scripts/build_shards.py --source tinystories  656.13s user 11.99s system 415% cpu 2:40.90 total
+exit 0

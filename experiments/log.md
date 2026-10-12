@@ -112,3 +112,42 @@ _(fill in once Phase 4 resume works: the exact command, checkpoint path pattern,
 - Caveats: 1,000 documents per corpus, single run. The cause of the gap is not measured; candidate
   explanations are the smaller vocabulary (32,768 vs 50,257) and digit splitting. Per-token losses
   of Syrinx and GPT-2 are not comparable; use bits per byte with these bytes/token values.
+
+## EXP-004 — TinyStories token shards and Gate 2 checks (Phase 2)
+- Date: 2026-10-12
+- Git SHA: 643fc25 (the build started from the uncommitted working tree; its code was committed
+  unchanged as b7cfd66 + 643fc25 while the build ran)
+- Commands: `time uv run python scripts/build_shards.py --source tinystories`, then
+  `time uv run python scripts/check_shards.py --data-dir data_cache/tokens/tinystories` (all defaults)
+- Raw output: [`shards-tinystories-build-2026-10-12.txt`](shards-tinystories-build-2026-10-12.txt)
+  (the JSON line is the summary), [`shards-tinystories-check-2026-10-12.txt`](shards-tinystories-check-2026-10-12.txt)
+- Input: TinyStories revision `f54c09fd23315a6f9c86f9dc80f725de7d8f9c64`, `train` then
+  `validation` (both official splits re-split by content hash), read from parquet files
+  downloaded once to the local HF cache (`syrinx.data.sources`)
+- Settings: tokenizer SHA-256 `0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8`,
+  `val_fraction` 0.005, split salt `syrinx-split-v1`, `min_chars` 200, shard target 100M tokens
+- Hardware state: AC power (`pmset -g batt` showed 'AC Power' before and after the build)
+- Metrics (source: raw output above):
+
+  | split | docs | tokens (EOS incl.) | shards | tokens / doc |
+  |---|---|---|---|---|
+  | train | 1,805,471 | 411,455,118 | 5 | 227.9 |
+  | val | 9,122 | 2,074,361 | 1 | 227.4 |
+
+  Selection: 2,141,709 source documents seen (2,119,719 train + 21,990 validation rows),
+  326,842 exact duplicates after normalization (15.3%), 230 empty, 44 under 200 characters;
+  kept 1,814,593, of which 0.503% went to val.
+  Build wall-clock 2:40.90 (656 s user, 415% CPU), about 2.56M tokens/s end to end.
+  Check wall-clock 12.5 s; exit 0, `passed: true`, no problems.
+- Gate 2 checks (from the check output): train/val overlap 0 documents; 0 duplicate documents
+  within each split; counts, shard names and provenance match `summary.json`; the first 20,000
+  selected source documents (19,902 train, 98 val) decode from the shards to exactly the source
+  text.
+- Observations: 15.3% of TinyStories documents are exact duplicates of earlier ones. Copies of
+  `validation` stories that also occur in `train` were dropped as duplicates before the hash split,
+  so they cannot leak into our val. The process exited on its own; the post-run hang seen with
+  remote streaming (Phase 1 and the Phase 2 smoke builds) did not happen when reading local files.
+- Caveats: the decode check covers the first 20,000 documents, not all 1.8M; the overlap and
+  count checks cover every document. Throughput is not comparable with the Phase 2 smoke builds,
+  which were on battery and streamed over the network. The 2:40.90 excludes the one-time
+  1,000.8 MB download (about 40 minutes on 2026-10-11, network-bound).

@@ -1,0 +1,5 @@
+2026-10-12 12:44:06 INFO    httpx: HTTP Request: GET https://huggingface.co/api/datasets/roneneldan/TinyStories/tree/f54c09fd23315a6f9c86f9dc80f725de7d8f9c64?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-10-12 12:44:06 INFO    syrinx.data.sources: Reading roneneldan/TinyStories train file 1/4: data/train-00000-of-00004-2d5a1467fff1081b.parquet
+{"data_dir": "data_cache/tokens/tinystories", "overlap_docs": 0, "passed": true, "problems": [], "splits": {"train": {"docs": 1805471, "duplicate_docs": 0, "shards": ["train_0000.bin", "train_0001.bin", "train_0002.bin", "train_0003.bin", "train_0004.bin"], "tokens": 411455118}, "val": {"docs": 9122, "duplicate_docs": 0, "shards": ["val_0000.bin"], "tokens": 2074361}}, "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8", "verified_docs": {"train": 19902, "val": 98}}
+uv run python scripts/check_shards.py --data-dir data_cache/tokens/tinystorie  11.58s user 0.39s system 95% cpu 12.473 total
+exit 0
