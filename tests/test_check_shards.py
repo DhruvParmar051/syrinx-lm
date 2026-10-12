@@ -445,19 +445,20 @@ def test_stream_source_uses_summary_provenance(
         list(script.stream_source({**summary, "source": "unknown"}))
 
 
-def test_stream_texts_calls_load_dataset(
+def test_stream_texts_reads_cached_hub_files(
     script: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Same contract as the build script's stream_texts."""
-    calls: list[tuple[tuple[Any, ...], dict[str, Any]]] = []
+    """Delegates to ``syrinx.data.sources.iter_hub_texts`` (download each parquet file
+    once, read it locally), same as the build script."""
+    calls: list[tuple[Any, ...]] = []
 
-    def fake(*args: Any, **kwargs: Any) -> list[dict[str, str]]:
-        calls.append((args, kwargs))
-        return [{"text": "a"}]
+    def fake(
+        dataset: str, subset: str | None, split: str, text_field: str, revision: str
+    ) -> Iterator[str]:
+        calls.append((dataset, subset, split, text_field, revision))
+        return iter(["a", "b"])
 
-    monkeypatch.setattr(script, "load_dataset", fake)
-    assert list(script.stream_texts("d", "s", "train", "text", "r")) == ["a"]
-    assert calls == [(("d",), {"name": "s", "split": "train", "streaming": True, "revision": "r"})]
-    monkeypatch.setattr(script, "load_dataset", lambda *a, **k: [{"story": "a"}])
-    with pytest.raises(KeyError, match="text"):
-        list(script.stream_texts("d", None, "train", "text", "r"))
+    monkeypatch.setattr(script, "iter_hub_texts", fake)
+    assert list(script.stream_texts("d", "s", "train", "text", "r")) == ["a", "b"]
+    assert calls == [("d", "s", "train", "text", "r")]
+    assert not hasattr(script, "load_dataset")

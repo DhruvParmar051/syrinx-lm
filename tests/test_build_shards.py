@@ -164,22 +164,23 @@ def test_parse_args_requires_known_source(script: ModuleType) -> None:
 # --- streaming ------------------------------------------------------------------------
 
 
-def test_stream_texts_calls_load_dataset(
+def test_stream_texts_reads_cached_hub_files(
     script: ModuleType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Streams one split at a pinned revision and yields the text column."""
-    calls: list[tuple[tuple[Any, ...], dict[str, Any]]] = []
+    """Delegates to ``syrinx.data.sources.iter_hub_texts`` (download each parquet file
+    once, read it locally); the remote streaming path is gone."""
+    calls: list[tuple[Any, ...]] = []
 
-    def fake(*args: Any, **kwargs: Any) -> list[dict[str, str]]:
-        calls.append((args, kwargs))
-        return [{"text": "a"}, {"text": "b"}]
+    def fake(
+        dataset: str, subset: str | None, split: str, text_field: str, revision: str
+    ) -> Iterator[str]:
+        calls.append((dataset, subset, split, text_field, revision))
+        return iter(["a", "b"])
 
-    monkeypatch.setattr(script, "load_dataset", fake)
+    monkeypatch.setattr(script, "iter_hub_texts", fake)
     assert list(script.stream_texts("d", "s", "train", "text", "r")) == ["a", "b"]
-    assert calls == [(("d",), {"name": "s", "split": "train", "streaming": True, "revision": "r"})]
-    monkeypatch.setattr(script, "load_dataset", lambda *a, **k: [{"story": "a"}])
-    with pytest.raises(KeyError, match="text"):
-        list(script.stream_texts("d", None, "train", "text", "r"))
+    assert calls == [("d", "s", "train", "text", "r")]
+    assert not hasattr(script, "load_dataset")
 
 
 def test_stream_source_chains_splits(script: ModuleType, monkeypatch: pytest.MonkeyPatch) -> None:

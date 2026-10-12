@@ -21,11 +21,10 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from datasets import load_dataset
-
 from syrinx.data.documents import SPLIT_SALT
 from syrinx.data.selection import DEFAULT_MIN_CHARS, DocumentStats, iter_documents
 from syrinx.data.shards import DEFAULT_SHARD_TOKENS, ShardWriter
+from syrinx.data.sources import iter_hub_texts
 from syrinx.tokenizer import VOCAB_SIZE, encode_documents, file_sha256, load_tokenizer
 from syrinx.utils.log import setup_logging
 
@@ -114,17 +113,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def stream_texts(
     dataset: str, subset: str | None, split: str, text_field: str, revision: str
 ) -> Iterator[str]:
-    """Stream raw texts: ``load_dataset(dataset, name=subset, split=split,
-    streaming=True, revision=revision)`` (module-level name, so tests can replace it),
-    yielding ``row[text_field]``.
+    """Raw texts of one split from the pinned Hub parquet files, downloaded once and read
+    locally (``iter_hub_texts``, module-level name so tests can replace it).
 
     Raises:
-        KeyError: If a row has no ``text_field`` column (message names the column).
+        KeyError: If the files have no ``text_field`` column (message names the column).
     """
-    for row in load_dataset(dataset, name=subset, split=split, streaming=True, revision=revision):
-        if text_field not in row:
-            raise KeyError(f"Row has no {text_field!r} column; columns: {sorted(row)}")
-        yield row[text_field]
+    yield from iter_hub_texts(dataset, subset, split, text_field, revision)
 
 
 def stream_source(spec: SourceSpec) -> Iterator[str]:
