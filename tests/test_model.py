@@ -144,12 +144,13 @@ def test_reset_parameters_reinitializes() -> None:
         assert not (p == 3.0).any(), name
 
 
-def test_initial_loss_near_log_vocab() -> None:
+def test_initial_loss_near_log_vocab(each_device: torch.device) -> None:
     """Untrained 10m model on random tokens: loss ~ ln(32768) = 10.40 (near-uniform output)."""
     cfg = _model_config("syrinx-10m")
     torch.manual_seed(0)
-    model = SyrinxLM(cfg).eval()
+    model = SyrinxLM(cfg).eval().to(each_device)
     tokens = torch.randint(0, cfg.vocab_size, (4, 257), generator=torch.Generator().manual_seed(1))
+    tokens = tokens.to(each_device)
     with torch.no_grad():
         loss = lm_loss(model(tokens[:, :-1]), tokens[:, 1:]).item()
     assert abs(loss - math.log(cfg.vocab_size)) < 0.15, loss
@@ -158,10 +159,11 @@ def test_initial_loss_near_log_vocab() -> None:
 # --- forward ------------------------------------------------------------------------
 
 
-def test_forward_shape_and_dtype() -> None:
-    model = _tiny()
-    out = model(torch.randint(0, TINY.vocab_size, (3, 10)))
+def test_forward_shape_and_dtype(each_device: torch.device) -> None:
+    model = _tiny().to(each_device)
+    out = model(torch.randint(0, TINY.vocab_size, (3, 10)).to(each_device))
     assert out.shape == (3, 10, TINY.vocab_size) and out.dtype == torch.float32
+    assert out.device.type == each_device.type
 
 
 def test_forward_uses_tied_embedding_as_output() -> None:
@@ -204,10 +206,11 @@ def test_non_2d_input_raises() -> None:
         _tiny()(torch.zeros(5, dtype=torch.long))
 
 
-def test_model_is_causal() -> None:
+def test_model_is_causal(each_device: torch.device) -> None:
     """Perturbing token t leaves the logits at positions < t unchanged."""
-    model = _tiny(seed=1).eval()
+    model = _tiny(seed=1).eval().to(each_device)
     ids = torch.randint(0, TINY.vocab_size, (2, 20), generator=torch.Generator().manual_seed(0))
+    ids = ids.to(each_device)
     with torch.no_grad():
         base = model(ids)
         for t in (1, 10, 19):
@@ -218,20 +221,39 @@ def test_model_is_causal() -> None:
             assert not torch.allclose(out[:, t], base[:, t])
 
 
-def test_prefix_consistency() -> None:
+def test_prefix_consistency(each_device: torch.device) -> None:
     """Logits for a prefix equal the first positions of the logits for the full sequence."""
-    model = _tiny(seed=2).eval()
+    model = _tiny(seed=2).eval().to(each_device)
     ids = torch.randint(0, TINY.vocab_size, (1, 16), generator=torch.Generator().manual_seed(3))
+    ids = ids.to(each_device)
     with torch.no_grad():
         torch.testing.assert_close(model(ids[:, :7]), model(ids)[:, :7], rtol=1e-5, atol=1e-5)
 
 
-def test_every_parameter_gets_a_gradient() -> None:
-    model = _tiny()
-    ids = torch.randint(0, TINY.vocab_size, (2, 12))
+def test_every_parameter_gets_a_gradient(each_device: torch.device) -> None:
+    model = _tiny().to(each_device)
+    ids = torch.randint(0, TINY.vocab_size, (2, 12)).to(each_device)
     lm_loss(model(ids[:, :-1]), ids[:, 1:]).backward()
     for name, p in model.named_parameters():
         assert p.grad is not None and p.grad.abs().sum() > 0, name
+
+
+def test_bf16_autocast_forward(each_device: torch.device) -> None:
+    """The 10m config trains under bf16 autocast: logits come out bf16 and finite, the
+    loss is float32, and it stays within 0.05 of the float32 loss for the same weights."""
+    cfg = _model_config("syrinx-10m")
+    torch.manual_seed(0)
+    model = SyrinxLM(cfg).eval().to(each_device)
+    ids = torch.randint(0, cfg.vocab_size, (2, 257), generator=torch.Generator().manual_seed(1))
+    ids = ids.to(each_device)
+    with torch.no_grad():
+        fp32_loss = lm_loss(model(ids[:, :-1]), ids[:, 1:])
+        with torch.autocast(device_type=each_device.type, dtype=torch.bfloat16):
+            logits = model(ids[:, :-1])
+            loss = lm_loss(logits, ids[:, 1:])
+    assert logits.dtype == torch.bfloat16 and torch.isfinite(logits).all()
+    assert loss.dtype == torch.float32
+    assert abs(loss.item() - fp32_loss.item()) < 0.05, (loss.item(), fp32_loss.item())
 
 
 # --- HF parity ----------------------------------------------------------------------

@@ -17,10 +17,10 @@ def test_parameters() -> None:
     assert sum(p.numel() for p in mlp.parameters()) == 3 * 16 * 48
 
 
-def test_matches_formula() -> None:
+def test_matches_formula(each_device: torch.device) -> None:
     torch.manual_seed(0)
-    mlp = SwiGLU(16, 40)
-    x = torch.randn(2, 5, 16)
+    mlp = SwiGLU(16, 40).to(each_device)
+    x = torch.randn(2, 5, 16).to(each_device)
     gate = x @ mlp.gate_proj.weight.T
     up = x @ mlp.up_proj.weight.T
     want = (gate * torch.sigmoid(gate) * up) @ mlp.down_proj.weight.T

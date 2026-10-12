@@ -36,10 +36,10 @@ def test_submodules_and_parameter_count() -> None:
     assert block.input_layernorm.eps == CFG.norm_eps
 
 
-def test_pre_norm_residual_structure() -> None:
-    block = _block()
-    x = torch.randn(2, 7, 32)
-    cos, sin = rope_cos_sin(CFG.head_dim, 7, CFG.rope_theta)
+def test_pre_norm_residual_structure(each_device: torch.device) -> None:
+    block = _block().to(each_device)
+    x = torch.randn(2, 7, 32).to(each_device)
+    cos, sin = (t.to(each_device) for t in rope_cos_sin(CFG.head_dim, 7, CFG.rope_theta))
     with torch.no_grad():
         h = x + block.self_attn(block.input_layernorm(x), cos, sin)
         want = h + block.mlp(block.post_attention_layernorm(h))
@@ -48,10 +48,10 @@ def test_pre_norm_residual_structure() -> None:
     torch.testing.assert_close(out, want)
 
 
-def test_is_causal() -> None:
-    block = _block(1)
-    x = torch.randn(1, 9, 32)
-    cos, sin = rope_cos_sin(CFG.head_dim, 9, CFG.rope_theta)
+def test_is_causal(each_device: torch.device) -> None:
+    block = _block(1).to(each_device)
+    x = torch.randn(1, 9, 32).to(each_device)
+    cos, sin = (t.to(each_device) for t in rope_cos_sin(CFG.head_dim, 9, CFG.rope_theta))
     with torch.no_grad():
         base = block(x, cos, sin)
         x2 = x.clone()

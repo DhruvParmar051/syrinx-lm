@@ -9,13 +9,20 @@ import torch.nn.functional as F
 from syrinx.model import CausalSelfAttention, apply_rope, causal_attention_reference, rope_cos_sin
 
 
-def _qkv(b: int = 2, h: int = 3, t: int = 9, d: int = 8, seed: int = 0) -> list[torch.Tensor]:
+def _qkv(
+    b: int = 2,
+    h: int = 3,
+    t: int = 9,
+    d: int = 8,
+    seed: int = 0,
+    device: str | torch.device = "cpu",
+) -> list[torch.Tensor]:
     gen = torch.Generator().manual_seed(seed)
-    return [torch.randn(b, h, t, d, generator=gen) for _ in range(3)]
+    return [torch.randn(b, h, t, d, generator=gen).to(device) for _ in range(3)]
 
 
-def test_reference_matches_sdpa() -> None:
-    q, k, v = _qkv()
+def test_reference_matches_sdpa(each_device: torch.device) -> None:
+    q, k, v = _qkv(device=each_device)
     want = F.scaled_dot_product_attention(q, k, v, is_causal=True)
     got = causal_attention_reference(q, k, v)
     assert got.shape == q.shape
@@ -27,8 +34,8 @@ def test_reference_first_position_attends_to_itself_only() -> None:
     torch.testing.assert_close(causal_attention_reference(q, k, v)[:, :, 0], v[:, :, 0])
 
 
-def test_reference_is_causal() -> None:
-    q, k, v = _qkv()
+def test_reference_is_causal(each_device: torch.device) -> None:
+    q, k, v = _qkv(device=each_device)
     base = causal_attention_reference(q, k, v)
     k2, v2 = k.clone(), v.clone()
     k2[:, :, 5:] += 10.0
@@ -78,12 +85,12 @@ def _manual_module(attn: CausalSelfAttention, x: torch.Tensor, cos, sin) -> torc
     return y @ attn.o_proj.weight.T
 
 
-def test_module_matches_manual_pipeline() -> None:
+def test_module_matches_manual_pipeline(each_device: torch.device) -> None:
     """Head split (h-major within C), RoPE on q and k only, causal attention, head merge."""
     torch.manual_seed(0)
-    attn = CausalSelfAttention(48, 6)
-    x = torch.randn(2, 11, 48)
-    cos, sin = rope_cos_sin(8, 11, 10000.0)
+    attn = CausalSelfAttention(48, 6).to(each_device)
+    x = torch.randn(2, 11, 48).to(each_device)
+    cos, sin = (t.to(each_device) for t in rope_cos_sin(8, 11, 10000.0))
     with torch.no_grad():
         out = attn(x, cos, sin)
         want = _manual_module(attn, x, cos, sin)
@@ -91,27 +98,27 @@ def test_module_matches_manual_pipeline() -> None:
     torch.testing.assert_close(out, want, rtol=1e-4, atol=1e-5)
 
 
-def test_module_is_causal() -> None:
+def test_module_is_causal(each_device: torch.device) -> None:
     """Changing token t changes no output before t."""
     torch.manual_seed(1)
-    attn = CausalSelfAttention(32, 4)
-    x = torch.randn(1, 10, 32)
-    cos, sin = rope_cos_sin(8, 10, 10000.0)
+    attn = CausalSelfAttention(32, 4).to(each_device)
+    x = torch.randn(1, 10, 32).to(each_device)
+    cos, sin = (t.to(each_device) for t in rope_cos_sin(8, 10, 10000.0))
     with torch.no_grad():
         base = attn(x, cos, sin)
         for t in (0, 4, 9):
             x2 = x.clone()
-            x2[:, t] = torch.randn(32)
+            x2[:, t] = torch.randn(32).to(each_device)
             out = attn(x2, cos, sin)
             torch.testing.assert_close(out[:, :t], base[:, :t])
             assert not torch.allclose(out[:, t], base[:, t])
 
 
-def test_module_batch_items_independent() -> None:
+def test_module_batch_items_independent(each_device: torch.device) -> None:
     torch.manual_seed(2)
-    attn = CausalSelfAttention(32, 4)
-    x = torch.randn(3, 6, 32)
-    cos, sin = rope_cos_sin(8, 6, 10000.0)
+    attn = CausalSelfAttention(32, 4).to(each_device)
+    x = torch.randn(3, 6, 32).to(each_device)
+    cos, sin = (t.to(each_device) for t in rope_cos_sin(8, 6, 10000.0))
     with torch.no_grad():
         full = attn(x, cos, sin)
         one = attn(x[1:2], cos, sin)

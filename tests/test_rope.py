@@ -51,30 +51,30 @@ def test_apply_rope_pairs_i_with_i_plus_half() -> None:
         assert y[0, 0, p, 1] == 0 and y[0, 0, p, 3] == 0
 
 
-def test_position_zero_is_identity_and_shape_kept() -> None:
+def test_position_zero_is_identity_and_shape_kept(each_device: torch.device) -> None:
     torch.manual_seed(0)
-    x = torch.randn(2, 3, 5, 8)
-    cos, sin = rope_cos_sin(8, 5, 10000.0)
+    x = torch.randn(2, 3, 5, 8).to(each_device)
+    cos, sin = (t.to(each_device) for t in rope_cos_sin(8, 5, 10000.0))
     y = apply_rope(x, cos, sin)
     assert y.shape == x.shape
     torch.testing.assert_close(y[:, :, 0], x[:, :, 0])
     assert not torch.allclose(y[:, :, 1:], x[:, :, 1:])
 
 
-def test_preserves_norm() -> None:
+def test_preserves_norm(each_device: torch.device) -> None:
     torch.manual_seed(1)
-    x = torch.randn(2, 4, 64, 32)
-    cos, sin = rope_cos_sin(32, 64, 10000.0)
+    x = torch.randn(2, 4, 64, 32).to(each_device)
+    cos, sin = (t.to(each_device) for t in rope_cos_sin(32, 64, 10000.0))
     y = apply_rope(x, cos, sin)
     torch.testing.assert_close(y.norm(dim=-1), x.norm(dim=-1))
 
 
-def test_dot_product_depends_only_on_offset() -> None:
+def test_dot_product_depends_only_on_offset(each_device: torch.device) -> None:
     """rope(q at m) . rope(k at n) == rope(q at m+s) . rope(k at n+s)."""
     torch.manual_seed(2)
     d, t = 16, 40
-    q, k = torch.randn(d), torch.randn(d)
-    cos, sin = rope_cos_sin(d, t, 10000.0)
+    q, k = torch.randn(d).to(each_device), torch.randn(d).to(each_device)
+    cos, sin = (x.to(each_device) for x in rope_cos_sin(d, t, 10000.0))
     qs = apply_rope(q.expand(1, 1, t, d), cos, sin)[0, 0]
     ks = apply_rope(k.expand(1, 1, t, d), cos, sin)[0, 0]
     for m, n, s in [(3, 1, 7), (10, 10, 25), (0, 5, 30), (20, 2, 17)]:
@@ -82,20 +82,21 @@ def test_dot_product_depends_only_on_offset() -> None:
     assert not torch.allclose(qs[3] @ ks[1], qs[3] @ ks[2], atol=1e-3)
 
 
-def test_bf16_stays_bf16() -> None:
-    x = torch.randn(1, 2, 4, 8).to(torch.bfloat16)
-    cos, sin = rope_cos_sin(8, 4, 10000.0)
+def test_bf16_stays_bf16(each_device: torch.device) -> None:
+    x = torch.randn(1, 2, 4, 8).to(each_device, torch.bfloat16)
+    cos, sin = (t.to(each_device) for t in rope_cos_sin(8, 4, 10000.0))
     y = apply_rope(x, cos, sin)
     assert y.dtype == torch.bfloat16
     want = (x * cos.to(torch.bfloat16)) + rotate_half(x) * sin.to(torch.bfloat16)
     assert torch.equal(y, want)
 
 
-def test_rotary_embedding_module() -> None:
-    rot = RotaryEmbedding(8, 16, 10000.0)
+def test_rotary_embedding_module(each_device: torch.device) -> None:
+    rot = RotaryEmbedding(8, 16, 10000.0).to(each_device)
     cos, sin = rot(10)
+    assert cos.device.type == sin.device.type == each_device.type  # buffers move
     full_cos, full_sin = rope_cos_sin(8, 16, 10000.0)
-    assert torch.equal(cos, full_cos[:10]) and torch.equal(sin, full_sin[:10])
+    assert torch.equal(cos.cpu(), full_cos[:10]) and torch.equal(sin.cpu(), full_sin[:10])
     assert rot(16)[0].shape == (16, 8)
     assert list(rot.state_dict()) == []  # non-persistent: not in checkpoints
     assert {name for name, _ in rot.named_buffers()} == {"cos", "sin"}

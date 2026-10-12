@@ -40,6 +40,12 @@ def mps_device() -> torch.device:
     return torch.device("mps")
 
 
+@pytest.fixture(params=["cpu", pytest.param("mps", marks=pytest.mark.mps)])
+def each_device(request: pytest.FixtureRequest) -> torch.device:
+    """Runs the test once per backend: CPU always, MPS when enabled (``mps`` mark)."""
+    return torch.device(request.param)
+
+
 @pytest.fixture
 def clean_env(monkeypatch: pytest.MonkeyPatch) -> pytest.MonkeyPatch:
     """Remove SYRINX_DEVICE and PYTORCH_ENABLE_MPS_FALLBACK for the test's duration.
