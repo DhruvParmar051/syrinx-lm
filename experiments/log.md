@@ -204,3 +204,37 @@ _(fill in once Phase 4 resume works: the exact command, checkpoint path pattern,
   every document. Only the first 4 of 14 files are used, so the train set is the start of
   `sample-10BT` in file order, not a random sample of it. The download/processing split comes from
   file timestamps, not from timers in the code.
+
+## EXP-006 — Gate 3 model-component tests on CPU and MPS (Phase 3)
+- Date: 2026-10-12
+- Git SHA: cad5fdf plus the uncommitted test changes that move the property tests onto a
+  CPU/MPS device fixture (committed next, unchanged)
+- Commands: `uv run pytest -v -rs tests/test_norm.py tests/test_rope.py tests/test_attention.py
+  tests/test_mlp.py tests/test_block.py tests/test_model.py`, then the same with `SYRINX_DEVICE=cpu`
+- Raw output: [`model-tests-mps-2026-10-12.txt`](model-tests-mps-2026-10-12.txt),
+  [`model-tests-cpu-2026-10-12.txt`](model-tests-cpu-2026-10-12.txt)
+- Hardware state: AC power (`pmset -g batt` in the output header); torch 2.14.0, Python 3.12.13
+- Results (source: raw output above): MPS available, 85 passed (61 CPU cases + 23 `[mps]`
+  parametrized cases + `test_cpu_and_mps_agree`), exit 0. `SYRINX_DEVICE=cpu`: 61 passed, 24
+  skipped (the MPS cases), exit 0.
+- Gate 3 criteria, each passing as `[cpu]` and `[mps]`:
+
+  | Criterion | Tests |
+  |---|---|
+  | Shapes | `test_forward_shape_and_dtype`, shape asserts in the component tests |
+  | RMSNorm vs manual formula | `test_norm.py::test_matches_manual_formula` (+ `test_eps_used`, `test_bf16_input_statistic_in_float32`) |
+  | RoPE preserves norms | `test_rope.py::test_preserves_norm` |
+  | RoPE q.k depends only on offset | `test_rope.py::test_dot_product_depends_only_on_offset` |
+  | Attention matches SDPA | `test_attention.py::test_reference_matches_sdpa`, `test_module_matches_manual_pipeline` |
+  | Causality | `test_attention.py::test_module_is_causal`, `test_block.py::test_is_causal`, `test_model.py::test_model_is_causal` |
+  | Initial loss near ln(32768) | `test_model.py::test_initial_loss_near_log_vocab` (within 0.15, 10m config) |
+  | CPU vs MPS agree | `test_model.py::test_cpu_and_mps_agree` (10m logits within 1e-3, loss within 1e-4) |
+  | Parameter count | `test_parameter_count_matches_analytic` (meta device; 11,798,784 / 50,866,688 / 124,275,456) |
+
+  Also: `test_bf16_autocast_forward` passes on both devices (bf16 finite logits, float32 loss
+  within 0.05 of the float32 loss), and `test_logits_match_hf_llama` passes on CPU.
+- Observations: before this run only `test_cpu_and_mps_agree` touched MPS; the property tests
+  built every tensor on CPU. They now take an `each_device` fixture.
+- Caveats: the tests assert thresholds, not values, so the measured initial loss and the
+  CPU/MPS gap are not recorded here. HF parity runs on CPU only. MPS cases use the
+  default float32 tolerances of `torch.testing.assert_close`, and all pass with them.

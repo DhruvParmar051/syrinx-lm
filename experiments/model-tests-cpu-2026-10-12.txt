@@ -1,0 +1,107 @@
+# 2026-10-12 18:54:19 | git cad5fdf + uncommitted test changes (tests/conftest.py, tests/test_{norm,rope,attention,mlp,block,model}.py)
+# macOS 27.0.1 | Apple M5 Pro | Now drawing from 'AC Power'
+# python 3.12.13 | torch 2.14.0 | mps available True
+# command: SYRINX_DEVICE=cpu uv run pytest -v -rs tests/test_norm.py tests/test_rope.py tests/test_attention.py tests/test_mlp.py tests/test_block.py tests/test_model.py
+============================= test session starts ==============================
+platform darwin -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0 -- ~/Project/syrinx-lm/.venv/bin/python
+rootdir: ~/Project/syrinx-lm
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 85 items
+
+tests/test_norm.py::test_weight_is_ones_and_only_parameter PASSED        [  1%]
+tests/test_norm.py::test_shape_and_dtype PASSED                          [  2%]
+tests/test_norm.py::test_matches_manual_formula[cpu] PASSED              [  3%]
+tests/test_norm.py::test_matches_manual_formula[mps] SKIPPED (MPS un...) [  4%]
+tests/test_norm.py::test_unit_rms_with_unit_weight[cpu] PASSED           [  5%]
+tests/test_norm.py::test_unit_rms_with_unit_weight[mps] SKIPPED (MPS...) [  7%]
+tests/test_norm.py::test_normalizes_last_dim_only PASSED                 [  8%]
+tests/test_norm.py::test_eps_used[cpu] PASSED                            [  9%]
+tests/test_norm.py::test_eps_used[mps] SKIPPED (MPS unavailable or S...) [ 10%]
+tests/test_norm.py::test_bf16_input_statistic_in_float32[cpu] PASSED     [ 11%]
+tests/test_norm.py::test_bf16_input_statistic_in_float32[mps] SKIPPED    [ 12%]
+tests/test_norm.py::test_matches_hf_llama_rmsnorm PASSED                 [ 14%]
+tests/test_rope.py::test_inv_freq_values PASSED                          [ 15%]
+tests/test_rope.py::test_cos_sin_tables PASSED                           [ 16%]
+tests/test_rope.py::test_rotate_half_explicit PASSED                     [ 17%]
+tests/test_rope.py::test_apply_rope_pairs_i_with_i_plus_half PASSED      [ 18%]
+tests/test_rope.py::test_position_zero_is_identity_and_shape_kept[cpu] PASSED [ 20%]
+tests/test_rope.py::test_position_zero_is_identity_and_shape_kept[mps] SKIPPED [ 21%]
+tests/test_rope.py::test_preserves_norm[cpu] PASSED                      [ 22%]
+tests/test_rope.py::test_preserves_norm[mps] SKIPPED (MPS unavailabl...) [ 23%]
+tests/test_rope.py::test_dot_product_depends_only_on_offset[cpu] PASSED  [ 24%]
+tests/test_rope.py::test_dot_product_depends_only_on_offset[mps] SKIPPED [ 25%]
+tests/test_rope.py::test_bf16_stays_bf16[cpu] PASSED                     [ 27%]
+tests/test_rope.py::test_bf16_stays_bf16[mps] SKIPPED (MPS unavailab...) [ 28%]
+tests/test_rope.py::test_rotary_embedding_module[cpu] PASSED             [ 29%]
+tests/test_rope.py::test_rotary_embedding_module[mps] SKIPPED (MPS u...) [ 30%]
+tests/test_rope.py::test_rotary_embedding_too_long_raises PASSED         [ 31%]
+tests/test_rope.py::test_matches_hf_llama_rotary PASSED                  [ 32%]
+tests/test_attention.py::test_reference_matches_sdpa[cpu] PASSED         [ 34%]
+tests/test_attention.py::test_reference_matches_sdpa[mps] SKIPPED (M...) [ 35%]
+tests/test_attention.py::test_reference_first_position_attends_to_itself_only PASSED [ 36%]
+tests/test_attention.py::test_reference_is_causal[cpu] PASSED            [ 37%]
+tests/test_attention.py::test_reference_is_causal[mps] SKIPPED (MPS ...) [ 38%]
+tests/test_attention.py::test_reference_scale_is_sqrt_head_dim PASSED    [ 40%]
+tests/test_attention.py::test_module_parameters PASSED                   [ 41%]
+tests/test_attention.py::test_module_bad_heads_raises PASSED             [ 42%]
+tests/test_attention.py::test_module_matches_manual_pipeline[cpu] PASSED [ 43%]
+tests/test_attention.py::test_module_matches_manual_pipeline[mps] SKIPPED [ 44%]
+tests/test_attention.py::test_module_is_causal[cpu] PASSED               [ 45%]
+tests/test_attention.py::test_module_is_causal[mps] SKIPPED (MPS una...) [ 47%]
+tests/test_attention.py::test_module_batch_items_independent[cpu] PASSED [ 48%]
+tests/test_attention.py::test_module_batch_items_independent[mps] SKIPPED [ 49%]
+tests/test_mlp.py::test_parameters PASSED                                [ 50%]
+tests/test_mlp.py::test_matches_formula[cpu] PASSED                      [ 51%]
+tests/test_mlp.py::test_matches_formula[mps] SKIPPED (MPS unavailabl...) [ 52%]
+tests/test_mlp.py::test_gate_and_up_not_swapped PASSED                   [ 54%]
+tests/test_block.py::test_submodules_and_parameter_count PASSED          [ 55%]
+tests/test_block.py::test_pre_norm_residual_structure[cpu] PASSED        [ 56%]
+tests/test_block.py::test_pre_norm_residual_structure[mps] SKIPPED (...) [ 57%]
+tests/test_block.py::test_is_causal[cpu] PASSED                          [ 58%]
+tests/test_block.py::test_is_causal[mps] SKIPPED (MPS unavailable or...) [ 60%]
+tests/test_model.py::test_parameter_count_matches_analytic[syrinx-10m] PASSED [ 61%]
+tests/test_model.py::test_parameter_count_matches_analytic[syrinx-50m] PASSED [ 62%]
+tests/test_model.py::test_parameter_count_matches_analytic[syrinx-125m] PASSED [ 63%]
+tests/test_model.py::test_tied_embeddings_share_one_tensor PASSED        [ 64%]
+tests/test_model.py::test_untied_has_separate_head PASSED                [ 65%]
+tests/test_model.py::test_state_dict_keys[True] PASSED                   [ 67%]
+tests/test_model.py::test_state_dict_keys[False] PASSED                  [ 68%]
+tests/test_model.py::test_state_dict_matches_hf_llama_model PASSED       [ 69%]
+tests/test_model.py::test_init_statistics PASSED                         [ 70%]
+tests/test_model.py::test_untied_head_init PASSED                        [ 71%]
+tests/test_model.py::test_init_is_seeded PASSED                          [ 72%]
+tests/test_model.py::test_reset_parameters_reinitializes PASSED          [ 74%]
+tests/test_model.py::test_initial_loss_near_log_vocab[cpu] PASSED        [ 75%]
+tests/test_model.py::test_initial_loss_near_log_vocab[mps] SKIPPED (...) [ 76%]
+tests/test_model.py::test_forward_shape_and_dtype[cpu] PASSED            [ 77%]
+tests/test_model.py::test_forward_shape_and_dtype[mps] SKIPPED (MPS ...) [ 78%]
+tests/test_model.py::test_forward_uses_tied_embedding_as_output PASSED   [ 80%]
+tests/test_model.py::test_forward_composition PASSED                     [ 81%]
+tests/test_model.py::test_full_context_and_too_long PASSED               [ 82%]
+tests/test_model.py::test_non_2d_input_raises PASSED                     [ 83%]
+tests/test_model.py::test_model_is_causal[cpu] PASSED                    [ 84%]
+tests/test_model.py::test_model_is_causal[mps] SKIPPED (MPS unavaila...) [ 85%]
+tests/test_model.py::test_prefix_consistency[cpu] PASSED                 [ 87%]
+tests/test_model.py::test_prefix_consistency[mps] SKIPPED (MPS unava...) [ 88%]
+tests/test_model.py::test_every_parameter_gets_a_gradient[cpu] PASSED    [ 89%]
+tests/test_model.py::test_every_parameter_gets_a_gradient[mps] SKIPPED   [ 90%]
+tests/test_model.py::test_bf16_autocast_forward[cpu] PASSED              [ 91%]
+tests/test_model.py::test_bf16_autocast_forward[mps] SKIPPED (MPS un...) [ 92%]
+tests/test_model.py::test_logits_match_hf_llama PASSED                   [ 94%]
+tests/test_model.py::test_lm_loss_matches_manual PASSED                  [ 95%]
+tests/test_model.py::test_lm_loss_does_not_shift PASSED                  [ 96%]
+tests/test_model.py::test_lm_loss_float32_from_bf16 PASSED               [ 97%]
+tests/test_model.py::test_lm_loss_shape_mismatch_raises PASSED           [ 98%]
+tests/test_model.py::test_cpu_and_mps_agree SKIPPED (MPS unavailable...) [100%]
+
+=========================== short test summary info ============================
+SKIPPED [4] tests/test_norm.py: MPS unavailable or SYRINX_DEVICE=cpu
+SKIPPED [5] tests/test_rope.py: MPS unavailable or SYRINX_DEVICE=cpu
+SKIPPED [5] tests/test_attention.py: MPS unavailable or SYRINX_DEVICE=cpu
+SKIPPED [1] tests/test_mlp.py: MPS unavailable or SYRINX_DEVICE=cpu
+SKIPPED [2] tests/test_block.py: MPS unavailable or SYRINX_DEVICE=cpu
+SKIPPED [6] tests/test_model.py: MPS unavailable or SYRINX_DEVICE=cpu
+SKIPPED [1] tests/test_model.py:344: MPS unavailable or SYRINX_DEVICE=cpu
+======================== 61 passed, 24 skipped in 2.62s ========================
+exit 0
