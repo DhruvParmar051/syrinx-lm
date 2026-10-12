@@ -354,4 +354,37 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   position exactly on CPU.
 - Observations: system time is 35-38% of wall time here, similar to EXP-008/009 on MPS (47% and 37%),
   so these runs do not isolate the cause of the high system time.
-- Caveats: CPU only, fp32, micro-batch 4; 10 steps after resume. Bit-exact resume on MPS is not tested.
+- Caveats: CPU only, fp32, micro-batch 4; 10 steps after resume. MPS with the real config: EXP-011.
+
+## EXP-011 — Ladder (c) on MPS with the real 10m config: resume is within MPS run-to-run noise (Phase 4)
+- Date: 2026-10-12
+- Git SHA: 2e04f62 (clean for tracked files)
+- Config: `configs/syrinx-10m.yaml`, unmodified (micro-batch 32, seq 1024, bf16-autocast, seed 1337)
+- Commands (all `uv run python scripts/train.py --config configs/syrinx-10m.yaml --device mps
+  --log-interval 1 --eval-interval 100000 --ckpt-interval 100000` plus):
+  - straight: `--out-dir runs/ladder-c-mps-straight --stop-at-step 20`
+  - split: `--out-dir runs/ladder-c-mps-split --stop-at-step 10`, then the same with
+    `--stop-at-step 20 --resume`
+  - straight repeat (noise floor): `--out-dir runs/ladder-c-mps-straight2 --stop-at-step 20`
+- Raw output: [`ladder-c-resume-mps-2026-10-12.txt`](ladder-c-resume-mps-2026-10-12.txt) (training logs,
+  timings, per-step comparisons)
+- Hardware state: AC power
+- Metrics (source: raw output):
+
+  | max \|train loss difference\| | steps 1-10 | steps 11-20 (after the resume) |
+  |---|---|---|
+  | straight vs straight repeat (noise floor) | 1.72e-05 | 2.48e-05 |
+  | straight vs split (resume) | 2.29e-05 | 2.57e-05 |
+
+  Train loss is bit-identical at steps 1-3 in all three runs. Straight vs split: grad norm first differs
+  at step 3, loss at step 4, both before the resume point.
+  Step-20 checkpoints of straight vs split: weights not bit-equal, max abs difference 4.68e-05.
+- Wall clock: straight 15.65 s and 15.50 s; split 8.69 s + 8.56 s. sys time 0.93-1.03 s per run.
+- Result: PASS within tolerance. Two uninterrupted MPS runs with the same seed are not bitwise
+  identical, so bit-exact resume cannot be shown on MPS. The resumed run differs from the straight run
+  by the same amount as two straight runs do, and there is no jump at step 11, so resume adds no error
+  beyond MPS run-to-run noise. Bit-exactness of resume itself is shown on CPU (EXP-010).
+- Observations: here system time is about 1 s per run, against 175 s in EXP-008 (300 steps) and 370 s in
+  EXP-009 (1,000 steps). The high system time grows with run length; the cause is still not measured.
+- Caveats: 20 steps, all in warmup; one repeat for the noise floor. The source of MPS nondeterminism
+  (kernel reduction order, bf16 autocast) is not identified.
