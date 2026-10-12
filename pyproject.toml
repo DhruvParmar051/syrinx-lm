@@ -10,6 +10,7 @@ dependencies = [
     "numpy>=1.26",
     "tokenizers>=0.20",
     "datasets>=3.0",
+    "pyarrow>=15.0",  # reads cached parquet files directly (syrinx.data.sources)
     "huggingface-hub>=0.25",
     "safetensors>=0.4",
     "pyyaml>=6.0",
