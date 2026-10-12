@@ -6,7 +6,13 @@ embeddings; prefix ``model.`` on export).
 """
 
 from syrinx.model.norm import RMSNorm
+from syrinx.model.rope import RotaryEmbedding, apply_rope, rope_cos_sin, rope_inv_freq, rotate_half
 
 __all__ = [
     "RMSNorm",
+    "RotaryEmbedding",
+    "apply_rope",
+    "rope_cos_sin",
+    "rope_inv_freq",
+    "rotate_half",
 ]
