@@ -187,6 +187,20 @@ exited normally (EXP-004).
 
 ---
 
+## 2026-10-12 — AdamW groups and an LR schedule computed from the step
+**Context:** PLAN.md asks for no weight decay on norms and embeddings, with a justification, and a
+warmup + cosine schedule that survives checkpoint/resume.
+**Decision:** Two AdamW groups: weight decay on every 2-D weight (q/k/v/o, gate/up/down, an untied
+`lm_head`); none on the RMSNorm gains or the (tied) embedding. The LR is `lr_at(step)` (linear warmup
+from `lr/warmup` at step 0, half-cosine to `min_lr` at `max_steps`, then `min_lr`), set on every group
+before each step; there is no `LRScheduler` object.
+**Why:** RMSNorm gains act as per-channel scales whose neutral value is 1; decoupled decay pulls them
+toward 0 for no regularization benefit. Embedding rows receive gradient only when their token occurs,
+but decay shrinks every row every step, so rare tokens would decay toward zero between updates; with
+tied weights the same matrix is the output layer, so one rule covers both. A pure function of the step
+means a checkpoint restores the exact LR from the step number alone.
+**Revisit if:** the 50M/125M runs show embedding or norm-gain growth that decay would have prevented.
+
 ## Open (not yet decided — decide before Phase 5)
 - Global batch in tokens/step (starting point ~0.25M for 50M, ~0.5M for 125M).
 - Peak LR, min LR, warmup steps, weight decay, AdamW betas/eps.
