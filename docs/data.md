@@ -29,8 +29,8 @@ Tokens include one EOS per document. Raw UTF-8 bytes were not measured by the bu
 |---|---|---|---|---|---|
 | TinyStories | train | 1,805,471 | 411,455,118 | 5 | EXP-004, [`shards-tinystories-build-2026-10-12.txt`](../experiments/shards-tinystories-build-2026-10-12.txt) |
 | TinyStories | val | 9,122 | 2,074,361 | 1 | EXP-004 (same file) |
-| FineWeb-Edu | train | | | | |
-| FineWeb-Edu | val | | | | |
+| FineWeb-Edu (`sample-10BT`, files 000-003) | train | 2,334,471 | 2,500,678,395 | 26 | EXP-005, [`shards-fineweb-edu-build-2026-10-12.txt`](../experiments/shards-fineweb-edu-build-2026-10-12.txt) |
+| FineWeb-Edu (`sample-10BT`, files 000-003) | val | 11,513 | 12,215,490 | 1 | EXP-005 (same file) |
 
 ## Pipeline rules
 1. **Download once, read locally** (Phase 2 shard builds and checks, `syrinx.data.sources`): each
@@ -44,8 +44,10 @@ Tokens include one EOS per document. Raw UTF-8 bytes were not measured by the bu
    whitespace collapsing or stripping.
 3. **Exact dedup**: SHA-256 of the UTF-8 bytes of the normalized text; later copies are dropped.
    TinyStories: 326,842 of 2,141,709 documents dropped (15.3%, EXP-004).
+   FineWeb-Edu: 21,877 of 2,367,869 dropped (0.92%, EXP-005).
 4. **Length filter**: drop documents under 200 characters after normalization. Empty documents are
-   counted separately. TinyStories: 44 too short, 230 empty (EXP-004).
+   counted separately. TinyStories: 44 too short, 230 empty (EXP-004). FineWeb-Edu: 8 too short,
+   0 empty (EXP-005).
 5. **Split at the document level**, **before** tokenization and packing. The split has to be
    deterministic, e.g. from a hash of the document, so it's reproducible without keeping state.
 6. **Tokenize** → `uint16` memmap shards, with an EOS separator (`<|endoftext|>`) between documents.
@@ -62,6 +64,6 @@ Tokens include one EOS per document. Raw UTF-8 bytes were not measured by the bu
 ## Leakage and contamination checks
 | Check | Method | Result | Evidence |
 |---|---|---|---|
-| Train/val doc overlap | SHA-256 of each document's token ids in the train and val shards (equivalent to the text, since the tokenizer round-trips exactly); intersection must be empty | TinyStories: 0 of 1,805,471 train / 9,122 val | EXP-004, [`shards-tinystories-check-2026-10-12.txt`](../experiments/shards-tinystories-check-2026-10-12.txt) |
+| Train/val doc overlap | SHA-256 of each document's token ids in the train and val shards (equivalent to the text, since the tokenizer round-trips exactly); intersection must be empty | TinyStories: 0 of 1,805,471 train / 9,122 val; FineWeb-Edu: 0 of 2,334,471 train / 11,513 val | EXP-004, [`shards-tinystories-check-2026-10-12.txt`](../experiments/shards-tinystories-check-2026-10-12.txt); EXP-005, [`shards-fineweb-edu-check-2026-10-12.txt`](../experiments/shards-fineweb-edu-check-2026-10-12.txt) |
 | Tokenizer trained on train only | the list of shards used by the tokenizer script | | |
 | Benchmark contamination (Phase 8) | 13-gram overlap between benchmark test sets and train shards | | |

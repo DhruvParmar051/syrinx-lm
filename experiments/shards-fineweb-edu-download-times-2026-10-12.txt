@@ -1,0 +1,8 @@
+# Download completion times of the cached FineWeb-Edu parquet files (mtime of the cache entry), 2026-10-12
+$ for f in ~/.cache/huggingface/hub/datasets--HuggingFaceFW--fineweb-edu/snapshots/*/sample/10BT/*.parquet; do stat -L -f "%Sm %z %N" -t "%H:%M:%S" "$f"; done
+13:02:25 2152819114 ~/.cache/huggingface/hub/datasets--HuggingFaceFW--fineweb-edu/snapshots/87f09149ef4734204d70ed1d046ddc9ca3f2b8f9/sample/10BT/000_00000.parquet
+13:19:06 2152222432 ~/.cache/huggingface/hub/datasets--HuggingFaceFW--fineweb-edu/snapshots/87f09149ef4734204d70ed1d046ddc9ca3f2b8f9/sample/10BT/001_00000.parquet
+13:34:26 2151796315 ~/.cache/huggingface/hub/datasets--HuggingFaceFW--fineweb-edu/snapshots/87f09149ef4734204d70ed1d046ddc9ca3f2b8f9/sample/10BT/002_00000.parquet
+13:48:46 2152437524 ~/.cache/huggingface/hub/datasets--HuggingFaceFW--fineweb-edu/snapshots/87f09149ef4734204d70ed1d046ddc9ca3f2b8f9/sample/10BT/003_00000.parquet
+$ ls -lT data_cache/tokens/fineweb-edu/val/val_0000.bin   # last write of the build
+Oct 12 13:49:53 2026 24430980 data_cache/tokens/fineweb-edu/val/val_0000.bin

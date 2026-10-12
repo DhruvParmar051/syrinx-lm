@@ -151,3 +151,56 @@ _(fill in once Phase 4 resume works: the exact command, checkpoint path pattern,
   count checks cover every document. Throughput is not comparable with the Phase 2 smoke builds,
   which were on battery and streamed over the network. The 2:40.90 excludes the one-time
   1,000.8 MB download (about 40 minutes on 2026-10-11, network-bound).
+
+## EXP-005 — FineWeb-Edu token shards and Gate 2 checks (Phase 2)
+- Date: 2026-10-12
+- Git SHA: 1c3964d (clean)
+- Commands: `nohup caffeinate -i zsh -c 'time uv run python scripts/build_shards.py --source fineweb-edu'`,
+  then `time uv run python scripts/check_shards.py --data-dir data_cache/tokens/fineweb-edu`
+  (all defaults)
+- Raw output: [`shards-fineweb-edu-build-2026-10-12.txt`](shards-fineweb-edu-build-2026-10-12.txt)
+  (the JSON line is the summary), [`shards-fineweb-edu-check-2026-10-12.txt`](shards-fineweb-edu-check-2026-10-12.txt),
+  [`shards-fineweb-edu-download-times-2026-10-12.txt`](shards-fineweb-edu-download-times-2026-10-12.txt)
+- Input: FineWeb-Edu `sample-10BT`, revision `87f09149ef4734204d70ed1d046ddc9ca3f2b8f9`; files
+  `000`-`003` of 14 under `sample/10BT/`, downloaded during the build (none were cached before) and
+  read locally; the build stopped partway through file `003` at the train-token target
+- Settings: tokenizer SHA-256 `0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8`,
+  `val_fraction` 0.005, split salt `syrinx-split-v1`, `min_chars` 200, train target 2,500,000,000
+  tokens, shard target 100M tokens
+- Hardware state: AC power (`pmset -g batt` showed 'AC Power' before and after the build)
+- Metrics (source: raw output above):
+
+  | split | docs | tokens (EOS incl.) | shards | tokens / doc |
+  |---|---|---|---|---|
+  | train | 2,334,471 | 2,500,678,395 | 26 | 1,071.2 |
+  | val | 11,513 | 12,215,490 | 1 | 1,061.0 |
+
+  Selection: 2,367,869 source documents seen, 21,877 exact duplicates after normalization (0.92%),
+  0 empty, 8 under 200 characters; kept 2,345,984, of which 0.491% went to val. Train overshoots
+  the target by 678,395 tokens because the stop check runs after each batch of 1,024 documents.
+  Build wall-clock 59:17.45 (4,006 s user, 114% CPU), including the downloads. No retries or
+  timeouts in the log. Check wall-clock 20.3 s; exit 0, `passed: true`, no problems.
+- Download vs processing (from the build log's per-file "Reading" timestamps and the files'
+  download-completion times; minute-level, not timed in code):
+
+  | file | download | processing |
+  |---|---|---|
+  | 000 | 12:50:38 -> 13:02:25 (11:47) | -> 13:07:16 (4:51) |
+  | 001 | 13:07:16 -> 13:19:06 (11:50) | -> 13:23:46 (4:40) |
+  | 002 | 13:23:46 -> 13:34:26 (10:40) | -> 13:38:46 (4:20) |
+  | 003 (partial) | 13:38:46 -> 13:48:46 (10:00) | -> 13:49:53 (about 1:07) |
+
+  About 44 min downloading 8.6 GB (about 3.2 MB/s) and about 15 min processing (about 2.8M
+  tokens/s).
+- Gate 2 checks (from the check output): train/val overlap 0 documents; 0 duplicate documents
+  within each split; counts, shard names and provenance match `summary.json`; the first 20,000
+  selected source documents (19,903 train, 97 val) decode from the shards to exactly the source
+  text.
+- Observations: the 200-character filter dropped 8 documents, as expected for a corpus that is
+  quality-filtered upstream (docs/decisions.md, 2026-10-11 Phase 2 design). Exact duplicates are
+  0.92%, against 15.3% for TinyStories (EXP-004). The val split holds 12.2M tokens, close to the
+  ~12.5M expected in the design entry.
+- Caveats: the decode check covers the first 20,000 documents; the overlap and count checks cover
+  every document. Only the first 4 of 14 files are used, so the train set is the start of
+  `sample-10BT` in file order, not a random sample of it. The download/processing split comes from
+  file timestamps, not from timers in the code.
