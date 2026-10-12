@@ -201,8 +201,35 @@ tied weights the same matrix is the output layer, so one rule covers both. A pur
 means a checkpoint restores the exact LR from the step number alone.
 **Revisit if:** the 50M/125M runs show embedding or norm-gain growth that decay would have prevented.
 
-## Open (not yet decided — decide before Phase 5)
-- Global batch in tokens/step (starting point ~0.25M for 50M, ~0.5M for 125M).
-- Peak LR, min LR, warmup steps, weight decay, AdamW betas/eps.
-- Validation token count and eval interval.
-- Whether `<|pad|>` is actually needed (random-window packing doesn't pad; only batched eval might).
+## 2026-10-12 — Phase 5 (50M) training settings
+**Context:** PLAN.md leaves batch, optimizer values, validation and checkpointing open until Phase 5.
+Times below assume the EXP-000 proxy's 13,362 tok/s for 50M (a 15-step burst on a stand-in model);
+Phase 5 measures the real number.
+**Decision:**
+- **Tokens per optimizer step: 262,144** (micro-batch 16 x accumulation 16 x 1024); 3,815 steps for
+  1.0B tokens. Micro-batch 16: estimate 16.0 GiB (20.0 GiB with margin), proxy 24.2 GiB, ceiling 37.44 GiB.
+- **Peak LR: chosen by a sweep** over 3e-4, 6e-4, 1.2e-3. Each sweep run is the full-run config with only
+  `lr` and `min_lr` changed, stopped with `--stop-at-step 300`, so it sees the real warmup and schedule.
+  Pick rule (`scripts/lr_sweep.py`): drop runs with a non-finite loss or grad norm, no val loss at step
+  300, or a train loss more than 1.0 nat above its running minimum after warmup; take the lowest val
+  loss at step 300; if lower-LR runs are within 0.01 of it, take the lowest such LR.
+- **Unchanged from the placeholders:** min LR = peak/10, 200 warmup steps (52M tokens), weight decay 0.1
+  (matrices only), betas (0.9, 0.95), eps 1e-8, grad clip 1.0.
+- **Validation:** the same first 100 val batches (1.64M tokens) every 250 steps; the reported final
+  number is one full-split evaluation (12.2M tokens) of the last checkpoint.
+- **Checkpoints:** every 250 steps, keep the last 3, plus a milestone every 1,000 steps
+  (about 0.61 GB each, estimated as 50.87M parameters x 12 bytes).
+- **`<|pad|>`:** stays in the vocabulary (removing it would change token ids) but is reserved and
+  unused: random-window training and the fixed val windows never pad.
+- The sweep, the pick and the full run are chained by `scripts/run_phase5.sh`, so the full run starts
+  without a manual step; the chosen config is written to `runs/50m-a.yaml`.
+**Why:** batch size does not change wall-clock (micro-batch sets throughput), so it stays at the planned
+value and the sweep tunes only the LR. Short sweeps favour high LRs, hence the tie-break toward the
+lower LR. 20 val batches (the default) are too noisy to judge Gate 5's "no unexplained spikes"; 100
+cost an estimated ~41 s per eval, about 1% of the run.
+**Revisit if:** the sweep's best LR is the highest tried (extend the sweep upward before 125M), the
+measured 50M throughput differs from the proxy by more than 30%, or the val curve is too noisy at 100
+batches.
+
+## Open (not yet decided)
+- 125M batch and LR: to be set from the 50M sweep and the Gate 6a throughput measurement.
