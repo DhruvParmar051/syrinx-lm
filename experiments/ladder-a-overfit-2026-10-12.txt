@@ -1,0 +1,39 @@
+# 2026-10-12 21:11:26 | git 5048c38 | Now drawing from 'AC Power'
+# command: uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/ladder-a-overfit --overfit-batch --stop-at-step 300 --log-interval 10 --eval-interval 100000 --ckpt-interval 100000
+2026-10-12 21:11:26 INFO    syrinx.utils.device: Using device mps (from auto-detect)
+2026-10-12 21:11:45 INFO    __main__: step 10 loss 9.9541 lr 5.00e-05
+2026-10-12 21:11:55 INFO    __main__: step 20 loss 9.4743 lr 1.00e-04
+2026-10-12 21:12:06 INFO    __main__: step 30 loss 8.8264 lr 1.50e-04
+2026-10-12 21:12:18 INFO    __main__: step 40 loss 8.0327 lr 2.00e-04
+2026-10-12 21:12:30 INFO    __main__: step 50 loss 7.1535 lr 2.50e-04
+2026-10-12 21:12:42 INFO    __main__: step 60 loss 6.2979 lr 3.00e-04
+2026-10-12 21:12:55 INFO    __main__: step 70 loss 5.4931 lr 3.50e-04
+2026-10-12 21:13:07 INFO    __main__: step 80 loss 4.8088 lr 4.00e-04
+2026-10-12 21:13:20 INFO    __main__: step 90 loss 4.2462 lr 4.50e-04
+2026-10-12 21:13:32 INFO    __main__: step 100 loss 3.7393 lr 5.00e-04
+2026-10-12 21:13:43 INFO    __main__: step 110 loss 3.2691 lr 5.50e-04
+2026-10-12 21:13:55 INFO    __main__: step 120 loss 2.8402 lr 6.00e-04
+2026-10-12 21:14:06 INFO    __main__: step 130 loss 2.4124 lr 6.50e-04
+2026-10-12 21:14:17 INFO    __main__: step 140 loss 1.9734 lr 7.00e-04
+2026-10-12 21:14:32 INFO    __main__: step 150 loss 1.5329 lr 7.50e-04
+2026-10-12 21:14:42 INFO    __main__: step 160 loss 1.1318 lr 8.00e-04
+2026-10-12 21:14:55 INFO    __main__: step 170 loss 0.7653 lr 8.50e-04
+2026-10-12 21:15:06 INFO    __main__: step 180 loss 0.4649 lr 9.00e-04
+2026-10-12 21:15:18 INFO    __main__: step 190 loss 0.2618 lr 9.50e-04
+2026-10-12 21:15:29 INFO    __main__: step 200 loss 0.1127 lr 1.00e-03
+2026-10-12 21:15:50 INFO    __main__: step 210 loss 0.0510 lr 1.00e-03
+2026-10-12 21:16:03 INFO    __main__: step 220 loss 0.0259 lr 1.00e-03
+2026-10-12 21:16:13 INFO    __main__: step 230 loss 0.0151 lr 1.00e-03
+2026-10-12 21:16:25 INFO    __main__: step 240 loss 0.2717 lr 1.00e-03
+2026-10-12 21:16:37 INFO    __main__: step 250 loss 0.0436 lr 1.00e-03
+2026-10-12 21:16:50 INFO    __main__: step 260 loss 0.0183 lr 1.00e-03
+2026-10-12 21:17:02 INFO    __main__: step 270 loss 0.0095 lr 1.00e-03
+2026-10-12 21:17:14 INFO    __main__: step 280 loss 0.0057 lr 1.00e-03
+2026-10-12 21:17:25 INFO    __main__: step 290 loss 0.0039 lr 1.00e-03
+2026-10-12 21:17:37 INFO    __main__: step 300 loss 0.0030 lr 1.00e-03
+{"end_step": 300, "out_dir": "runs/ladder-a-overfit", "start_step": 0, "train_loss": 0.0029509076848626137, "val_loss": null}
+real 372.42
+user 4.31
+sys 174.96
+exit 0
+# Now drawing from 'AC Power'

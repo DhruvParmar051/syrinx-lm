@@ -1,0 +1,95 @@
+# 2026-10-12 21:41:36 | git 067a73e | Now drawing from 'AC Power'
+# config = configs/syrinx-10m.yaml with these changes (CPU-sized; the 10m bf16 mb32 config did not finish one CPU step in 5.5 min):
+#   17c17
+#   <   micro_batch_size: 32
+#   ---
+#   >   micro_batch_size: 4
+#   26c26
+#   <   precision: bf16-autocast         # probe_bf16 passed on MPS (2026-09-22)
+#   ---
+#   >   precision: fp32         # probe_bf16 passed on MPS (2026-09-22)
+# straight: --out-dir runs/ladder-c-straight --stop-at-step 20
+2026-10-12 21:41:37 INFO    syrinx.utils.device: Using device cpu (from argument)
+2026-10-12 21:41:38 INFO    __main__: step 1 loss 10.4709 lr 5.00e-06
+2026-10-12 21:41:38 INFO    __main__: step 2 loss 10.4395 lr 1.00e-05
+2026-10-12 21:41:38 INFO    __main__: step 3 loss 10.4158 lr 1.50e-05
+2026-10-12 21:41:39 INFO    __main__: step 4 loss 10.3717 lr 2.00e-05
+2026-10-12 21:41:39 INFO    __main__: step 5 loss 10.3070 lr 2.50e-05
+2026-10-12 21:41:40 INFO    __main__: step 6 loss 10.3144 lr 3.00e-05
+2026-10-12 21:41:40 INFO    __main__: step 7 loss 10.2299 lr 3.50e-05
+2026-10-12 21:41:41 INFO    __main__: step 8 loss 10.1683 lr 4.00e-05
+2026-10-12 21:41:41 INFO    __main__: step 9 loss 10.1497 lr 4.50e-05
+2026-10-12 21:41:41 INFO    __main__: step 10 loss 10.1077 lr 5.00e-05
+2026-10-12 21:41:42 INFO    __main__: step 11 loss 10.0029 lr 5.50e-05
+2026-10-12 21:41:42 INFO    __main__: step 12 loss 9.9364 lr 6.00e-05
+2026-10-12 21:41:43 INFO    __main__: step 13 loss 9.9442 lr 6.50e-05
+2026-10-12 21:41:43 INFO    __main__: step 14 loss 9.8682 lr 7.00e-05
+2026-10-12 21:41:44 INFO    __main__: step 15 loss 9.7950 lr 7.50e-05
+2026-10-12 21:41:44 INFO    __main__: step 16 loss 9.7886 lr 8.00e-05
+2026-10-12 21:41:44 INFO    __main__: step 17 loss 9.7172 lr 8.50e-05
+2026-10-12 21:41:45 INFO    __main__: step 18 loss 9.6899 lr 9.00e-05
+2026-10-12 21:41:45 INFO    __main__: step 19 loss 9.6557 lr 9.50e-05
+2026-10-12 21:41:46 INFO    __main__: step 20 loss 9.6191 lr 1.00e-04
+{"end_step": 20, "out_dir": "runs/ladder-c-straight", "start_step": 0, "train_loss": 9.619067192077637, "val_loss": null}
+real 9.82
+user 16.61
+sys 3.70
+exit 0
+# split 1: --out-dir runs/ladder-c-split --stop-at-step 10
+2026-10-12 21:41:46 INFO    syrinx.utils.device: Using device cpu (from argument)
+2026-10-12 21:41:47 INFO    __main__: step 1 loss 10.4709 lr 5.00e-06
+2026-10-12 21:41:48 INFO    __main__: step 2 loss 10.4395 lr 1.00e-05
+2026-10-12 21:41:48 INFO    __main__: step 3 loss 10.4158 lr 1.50e-05
+2026-10-12 21:41:49 INFO    __main__: step 4 loss 10.3717 lr 2.00e-05
+2026-10-12 21:41:49 INFO    __main__: step 5 loss 10.3070 lr 2.50e-05
+2026-10-12 21:41:49 INFO    __main__: step 6 loss 10.3144 lr 3.00e-05
+2026-10-12 21:41:50 INFO    __main__: step 7 loss 10.2299 lr 3.50e-05
+2026-10-12 21:41:50 INFO    __main__: step 8 loss 10.1683 lr 4.00e-05
+2026-10-12 21:41:51 INFO    __main__: step 9 loss 10.1497 lr 4.50e-05
+2026-10-12 21:41:51 INFO    __main__: step 10 loss 10.1077 lr 5.00e-05
+{"end_step": 10, "out_dir": "runs/ladder-c-split", "start_step": 0, "train_loss": 10.107739448547363, "val_loss": null}
+real 5.39
+user 8.66
+sys 1.90
+exit 0
+# split 2: --out-dir runs/ladder-c-split --stop-at-step 20 --resume
+2026-10-12 21:41:52 INFO    syrinx.utils.device: Using device cpu (from argument)
+2026-10-12 21:41:53 INFO    __main__: step 11 loss 10.0029 lr 5.50e-05
+2026-10-12 21:41:53 INFO    __main__: step 12 loss 9.9364 lr 6.00e-05
+2026-10-12 21:41:54 INFO    __main__: step 13 loss 9.9442 lr 6.50e-05
+2026-10-12 21:41:54 INFO    __main__: step 14 loss 9.8682 lr 7.00e-05
+2026-10-12 21:41:54 INFO    __main__: step 15 loss 9.7950 lr 7.50e-05
+2026-10-12 21:41:55 INFO    __main__: step 16 loss 9.7886 lr 8.00e-05
+2026-10-12 21:41:55 INFO    __main__: step 17 loss 9.7172 lr 8.50e-05
+2026-10-12 21:41:56 INFO    __main__: step 18 loss 9.6899 lr 9.00e-05
+2026-10-12 21:41:56 INFO    __main__: step 19 loss 9.6557 lr 9.50e-05
+2026-10-12 21:41:57 INFO    __main__: step 20 loss 9.6191 lr 1.00e-04
+{"end_step": 20, "out_dir": "runs/ladder-c-split", "start_step": 10, "train_loss": 9.619067192077637, "val_loss": null}
+real 5.31
+user 8.68
+sys 1.86
+exit 0
+model tensors equal: True 38
+optimizer state equal: True
+# comparison of runs/ladder-c-straight vs runs/ladder-c-split metrics.jsonl (train records):
+1 10.470919609069824 10.470919609069824 same
+2 10.439460754394531 10.439460754394531 same
+3 10.415817260742188 10.415817260742188 same
+4 10.371689796447754 10.371689796447754 same
+5 10.30695629119873 10.30695629119873 same
+6 10.314414024353027 10.314414024353027 same
+7 10.229867935180664 10.229867935180664 same
+8 10.168292045593262 10.168292045593262 same
+9 10.149666786193848 10.149666786193848 same
+10 10.107739448547363 10.107739448547363 same
+11 10.002915382385254 10.002915382385254 same
+12 9.936415672302246 9.936415672302246 same
+13 9.944151878356934 9.944151878356934 same
+14 9.868249893188477 9.868249893188477 same
+15 9.794983863830566 9.794983863830566 same
+16 9.788615226745605 9.788615226745605 same
+17 9.7172269821167 9.7172269821167 same
+18 9.689947128295898 9.689947128295898 same
+19 9.655734062194824 9.655734062194824 same
+20 9.619067192077637 9.619067192077637 same
+steps with any loss/grad_norm difference: []

@@ -53,7 +53,12 @@ quoted in the entry. If it can't be traced, it doesn't go in.
 ---
 
 ## Known-good resume command
-_(fill in once Phase 4 resume works: the exact command, checkpoint path pattern, and the date it was verified)_
+Verified 2026-10-12 on CPU (EXP-010): rerun the same command with `--resume` added. It continues from the
+newest `<out-dir>/checkpoints/step_NNNNNNN.pt` and appends to `<out-dir>/metrics.jsonl`; the config must
+be unchanged (a different config is refused).
+```
+uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<name> --resume
+```
 
 ## EXP-002 — Train the 32K byte-level BPE tokenizer (Phase 1)
 - Date: 2026-10-11
@@ -265,5 +270,88 @@ _(fill in once Phase 4 resume works: the exact command, checkpoint path pattern,
   output not kept) gave the same step-30 loss to 4 decimals and similar throughput at about half the
   peak memory; the config stays at micro-batch 32 (memory is not a constraint). Step times vary about
   3x; system time was high, consistent with cold reads of the memory-mapped shards.
+  **Correction (EXP-008):** the cold-read explanation is not supported. Ladder (a) with
+  `--overfit-batch` reads one batch and still spent 47% of wall time in system time. The cause is
+  unexplained.
 - Caveats: 30 steps is a short sample, all in warmup; throughput may change once shards are cached.
   The micro-batch 16 numbers are not backed by a saved file and are not used elsewhere.
+
+## EXP-008 — Ladder (a): overfit one batch on MPS (Phase 4)
+- Date: 2026-10-12
+- Git SHA: 5048c38 (clean for tracked files)
+- Config: `configs/syrinx-10m.yaml` (micro-batch 32, accum 1, seq 1024, bf16-autocast, seed 1337)
+- Command: `uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/ladder-a-overfit
+  --overfit-batch --stop-at-step 300 --log-interval 10 --eval-interval 100000 --ckpt-interval 100000` (MPS)
+- Raw output: [`ladder-a-overfit-2026-10-12.txt`](ladder-a-overfit-2026-10-12.txt); per-step records in
+  `runs/ladder-a-overfit/metrics.jsonl` (not tracked)
+- Hardware state: AC power
+- Tokens / steps: one fixed batch of 32 x 1024 tokens, 300 optimizer steps
+- Metrics (source: raw output; `metrics.jsonl` for peak memory, grad norm and throughput):
+
+  | step | 10 | 160 | 220 | 300 |
+  |---|---|---|---|---|
+  | train loss | 9.9541 | 1.1318 | 0.0259 | 0.0030 |
+
+  No NaN or inf loss; max logged grad norm 3.50. Peak memory 18.24 GiB (`mem_peak`, same as EXP-007).
+  Median 27,990 tok/s over logged steps 10-300 (min 12,979, max 42,785).
+- Wall clock: real 372.42 s, user 4.31 s, sys 174.96 s (`/usr/bin/time -p`).
+- Result: PASS. The loss on a single batch goes to 0.003, so the forward pass, loss, backward pass and
+  optimizer update can fit data.
+- Observations: system time is 47% of wall time although `--overfit-batch` reads the shards only once.
+  This contradicts the EXP-007 explanation (cold memmap reads); see the correction there.
+- Caveats: single seed; the loss is logged every 10 steps only.
+
+## EXP-009 — Ladder (b): memorize ~1 MB of TinyStories on MPS (Phase 4)
+- Date: 2026-10-12
+- Git SHA: 5048c38 (clean for tracked files)
+- Config: `configs/syrinx-10m.yaml` (as EXP-008)
+- Command: `uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/ladder-b-memorize
+  --train-token-limit 2.5e5 --stop-at-step 1000 --log-interval 10 --eval-interval 100 --eval-batches 20
+  --ckpt-interval 100000` (MPS)
+- Raw output: [`ladder-b-memorize-2026-10-12.txt`](ladder-b-memorize-2026-10-12.txt); per-step records in
+  `runs/ladder-b-memorize/metrics.jsonl` (not tracked)
+- Hardware state: AC power
+- Tokens / steps: training restricted to the first 250,000 tokens of the TinyStories train shards
+  (`limit_tokens`); about 1.0 MB of text at the 3.988 bytes/token measured on TinyStories val in EXP-003
+  (an estimate, not measured on these tokens). 1,000 steps x 32,768 tokens = 32.8M tokens seen, about
+  131 passes over the subset. Val: 20 batches of the full TinyStories val shard.
+- Metrics (source: raw output):
+
+  | step | 100 | 200 | 300 | 500 | 700 | 900 | 1000 |
+  |---|---|---|---|---|---|---|---|
+  | train loss | 4.4171 | 2.7251 | — | 0.3219 | — | — | 0.1052 |
+  | val loss | 4.5580 | **3.4814** | 3.7862 | 4.8976 | 5.5255 | 6.0212 | 6.2379 |
+
+  Lowest logged train loss 0.0901 at step 960 (`metrics.jsonl`). No NaN or inf; max logged grad norm 2.99.
+  Peak memory 18.24 GiB. Median 45,535 tok/s over logged steps 10-1000 (min 9,947, max 49,098).
+- Wall clock: real 1011.98 s, user 11.48 s, sys 370.40 s.
+- Result: PASS. Train loss falls to about 0.1 while val loss reaches its minimum at step 200 and then
+  rises every evaluation to 6.24: the model memorizes the subset instead of generalizing, as intended.
+- Observations: median throughput is 1.6x EXP-008's on the same config and device; the cause is not
+  measured.
+- Caveats: single seed; train loss is a single-batch value at each logged step, val loss a 20-batch mean.
+
+## EXP-010 — Ladder (c): interrupted and resumed run reproduces the uninterrupted one on CPU (Phase 4)
+- Date: 2026-10-12
+- Git SHA: 067a73e (clean for tracked files)
+- Config: `configs/syrinx-10m.yaml` with `micro_batch_size: 4` and `precision: fp32` (scratch copy; the
+  diff is printed at the top of the raw output). The unmodified config (micro-batch 32, bf16-autocast)
+  did not complete one CPU step in 5.5 min, so that attempt was stopped and not kept.
+- Commands (all with `--device cpu --log-interval 1 --eval-interval 100000 --ckpt-interval 100000`):
+  - straight: `--out-dir runs/ladder-c-straight --stop-at-step 20`
+  - split, part 1: `--out-dir runs/ladder-c-split --stop-at-step 10`
+  - split, part 2: `--out-dir runs/ladder-c-split --stop-at-step 20 --resume` (from `step_0000010.pt`)
+- Raw output: [`ladder-c-resume-cpu-2026-10-12.txt`](ladder-c-resume-cpu-2026-10-12.txt) (training logs,
+  timings, and the comparison output)
+- Hardware state: AC power
+- Metrics (source: raw output):
+  - Per-step train loss and grad norm, steps 1-20: identical in both runs (exact float equality,
+    0 differing steps). Step 1 loss 10.470919609069824, step 11 (first step after resume)
+    10.002915382385254, step 20 9.619067192077637.
+  - Step-20 checkpoints: all 38 model tensors and all optimizer state tensors equal (`torch.equal`).
+  - Wall clock: straight 9.82 s; split 5.39 s + 5.31 s. sys time 3.70 s / 1.90 s / 1.86 s.
+- Result: PASS. Resume restores model, optimizer, LR schedule (computed from the step), RNG and data
+  position exactly on CPU.
+- Observations: system time is 35-38% of wall time here, similar to EXP-008/009 on MPS (47% and 37%),
+  so these runs do not isolate the cause of the high system time.
+- Caveats: CPU only, fp32, micro-batch 4; 10 steps after resume. Bit-exact resume on MPS is not tested.
