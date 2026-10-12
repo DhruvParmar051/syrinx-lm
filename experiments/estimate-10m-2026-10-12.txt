@@ -1,0 +1,15 @@
+# 2026-10-12 21:08:46 | git 0023509 | Now drawing from 'AC Power'
+# command: uv run python scripts/estimate_memory.py configs/syrinx-10m.yaml
+micro-batch 32, seq_len 1024, precision bf16-autocast
+syrinx-10m: 11,798,784 parameters
+component             GiB
+params               0.04
+grads                0.04
+optimizer            0.09
+autocast_copies      0.02
+activations          3.28
+logits              14.00
+subtotal            17.48
+total x1.25         21.85
+FLOPs/token 8.338e+07; tokens 2.949e+08; train FLOPs 2.459e+16
+exit 0

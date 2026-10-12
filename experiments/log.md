@@ -238,3 +238,32 @@ _(fill in once Phase 4 resume works: the exact command, checkpoint path pattern,
 - Caveats: the tests assert thresholds, not values, so the measured initial loss and the
   CPU/MPS gap are not recorded here. HF parity runs on CPU only. MPS cases use the
   default float32 tolerances of `torch.testing.assert_close`, and all pass with them.
+
+## EXP-007 — 10m memory estimate vs a 30-step measured probe (Phase 4)
+- Date: 2026-10-12
+- Git SHA: 0023509 (clean)
+- Config: `configs/syrinx-10m.yaml` (micro-batch 32, accum 1, seq 1024, bf16-autocast, seed 1337)
+- Commands: `uv run python scripts/estimate_memory.py configs/syrinx-10m.yaml`;
+  `uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir <scratch> --stop-at-step 30
+  --log-interval 1 --eval-interval 100000 --ckpt-interval 100000` (MPS)
+- Raw output: [`estimate-10m-2026-10-12.txt`](estimate-10m-2026-10-12.txt),
+  [`probe-10m-metrics-2026-10-12.jsonl`](probe-10m-metrics-2026-10-12.jsonl) (the probe's `metrics.jsonl`)
+- Hardware state: AC power
+- Metrics (source: raw output above):
+
+  | | estimate | measured |
+  |---|---|---|
+  | peak memory | 17.48 GiB subtotal (21.85 GiB with the x1.25 margin); logits 14.00 GiB | 18.24 GiB (`mem_peak`, max over 30 steps) |
+  | throughput | — | median 28,601 tok/s over steps 6-30 (min 15,759, max 42,680) |
+  | step time | — | step 1 6.96 s; median 1.146 s over steps 6-30 |
+  | loss | ln(32768) = 10.397 at init | 10.451 at step 1, 9.015 at step 30 |
+
+- Gap: measured peak is 4.3% above the unmargined estimate and 17% below the margined one.
+- Time projection (not measured): 2.949e8 tokens at 28.6k tok/s is about 2.9 h for the full 10m run,
+  1.9-5.2 h across the observed min/max throughput, excluding evaluation.
+- Observations: a second probe with micro-batch 16 x accum 2 (same tokens per step; scratch config,
+  output not kept) gave the same step-30 loss to 4 decimals and similar throughput at about half the
+  peak memory; the config stays at micro-batch 32 (memory is not a constraint). Step times vary about
+  3x; system time was high, consistent with cold reads of the memory-mapped shards.
+- Caveats: 30 steps is a short sample, all in warmup; throughput may change once shards are cached.
+  The micro-batch 16 numbers are not backed by a saved file and are not used elsewhere.
