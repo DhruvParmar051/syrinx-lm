@@ -1,4 +1,6 @@
-import time, sys, torch
+import time
+
+import torch
 from transformers import LlamaConfig, LlamaForCausalLM
 
 dev = "mps"
@@ -24,7 +26,7 @@ def run(name, bs, amp, steps=15, warm=4):
     x = torch.randint(0, 32768, (bs, 1024), device=dev)
     torch.mps.empty_cache()
 
-    def step():
+    def step(m, opt):
         with torch.autocast("mps", dtype=torch.bfloat16, enabled=amp):
             out = m(input_ids=x, labels=x)
         out.loss.backward()
@@ -34,11 +36,11 @@ def run(name, bs, amp, steps=15, warm=4):
         return out.loss
 
     for _ in range(warm):
-        step()
+        step(m, opt)
     torch.mps.synchronize()
     t = time.perf_counter()
     for _ in range(steps):
-        l = step()
+        l = step(m, opt)
     torch.mps.synchronize()
     dt = time.perf_counter() - t
     tps = bs * 1024 * steps / dt
