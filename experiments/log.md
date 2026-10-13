@@ -388,3 +388,48 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   EXP-009 (1,000 steps). The high system time grows with run length; the cause is still not measured.
 - Caveats: 20 steps, all in warmup; one repeat for the noise floor. The source of MPS nondeterminism
   (kernel reduction order, bf16 autocast) is not identified.
+
+## EXP-012 — Ladder (d): full 10m run on TinyStories, with samples (Phase 4)
+- Date: 2026-10-12 21:59 to 2026-10-13 00:28
+- Git SHA: 6c8739d (clean for tracked files); samples written by `scripts/run_phase5.sh` at 3acca9f
+- Config: `configs/syrinx-10m.yaml` (micro-batch 32, accum 1, seq 1024, bf16-autocast, lr 1e-3 -> 1e-4,
+  200 warmup steps, 9,000 steps, seed 1337)
+- Command: `caffeinate -i uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir
+  runs/10m-a` (defaults: log every 10 steps, eval every 250 steps on 20 val batches, checkpoint every 500)
+- Raw output: [`10m-a-train-2026-10-12.txt`](10m-a-train-2026-10-12.txt); per-step records in
+  `runs/10m-a/metrics.jsonl` (not tracked); samples
+  [`samples-10m-a-step9000.jsonl`](samples-10m-a-step9000.jsonl) (temperature 0.8, top-k 50, seeds 0-2)
+  and [`samples-10m-a-step9000-greedy.jsonl`](samples-10m-a-step9000-greedy.jsonl) (temperature 0)
+- Hardware state: AC power throughout. From 22:50:56 an Ollama `llama-server` process (another
+  application) was loaded and shared the GPU until the end of the run.
+- Tokens / steps: 9,000 steps x 32,768 = 294,912,000 tokens (`tokens_seen`), about 0.72 of the
+  411,455,118-token TinyStories train split (EXP-004), drawn as random windows.
+- Metrics (source: raw output and `metrics.jsonl`):
+
+  | step | 250 | 500 | 1000 | 2000 | 3000 | 4000 | 5000 | 6000 | 7000 | 8000 | 9000 |
+  |---|---|---|---|---|---|---|---|---|---|---|---|
+  | val loss | 2.9117 | 2.3607 | 2.0436 | 1.8545 | 1.7681 | 1.7145 | 1.6666 | 1.6312 | 1.6010 | 1.5827 | **1.5725** |
+
+  Final train loss 1.5620 (single batch at step 9000). The val loss fell at every one of the 36
+  evaluations; the lowest is the last. No non-finite loss or grad norm in 900 logged steps; max grad
+  norm 3.02 (during warmup), 1.03 after step 200.
+- Peak memory: 18.24 GiB measured (`mem_peak`) vs 17.48 GiB estimated (EXP-007), +4.3%.
+- Throughput (`tokens_per_sec`, logged steps): median 48,501 tok/s over steps 20-4300 (min 41,149);
+  median 26,212 tok/s over steps 4500-9000 (min 10,958, max 46,572). The drop is at step 4500
+  (22:51:07), 11 s after `llama-server` started; 4,490 logged 44,898 tok/s and 4,500 logged 22,335.
+- Wall clock: real 8,940.55 s (2.48 h), user 84.51 s, sys 3,548.52 s. EXP-007 projected 2.9 h
+  (1.9-5.2 h) from a 28.6k tok/s warmup median; the uncontended part of this run ran 1.7x faster than
+  that median.
+- Checkpoints: 141,646,859 bytes each; `step_0008000.pt`, `step_0008500.pt`, `step_0009000.pt` kept.
+- Samples (all three prompts, both settings, in the files above): at temperature 0.8 the continuations
+  are TinyStories-style stories with consistent characters, quoted dialogue and an ending, and each
+  stops at EOS. Errors: logical drift (a sign that addresses the character by name), a repeated list
+  item ("the swings ... and the swings"), and one broken word ("C cones", "C cream"). Greedy decoding
+  starts fluently and then loops ("He bit the bread. He bit the bread.").
+- Result: rung (d) PASS. The loss curve is smooth and still falling at the end, and the samples are
+  coherent at the level PLAN.md asks for ("coherent-ish").
+- Observations: system time is again about 40% of wall time (EXP-008 to EXP-011), with user time under
+  1%; the cause is still not measured.
+- Caveats: one seed; the val loss is a 20-batch mean (655,360 tokens), not the full split; the sample
+  judgement is qualitative, from 3 prompts. Half the run shared the GPU with another process, so its
+  wall clock and throughput are not a clean measurement of this config.
