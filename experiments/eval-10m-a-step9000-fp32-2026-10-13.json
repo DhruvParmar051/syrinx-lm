@@ -1,0 +1,18 @@
+{
+  "checkpoint": "runs/10m-a/checkpoints/step_0009000.pt",
+  "step": 9000,
+  "val_path": "data_cache/tokens/tinystories/val",
+  "seq_len": 1024,
+  "batch_size": 32,
+  "precision": "fp32",
+  "max_batches": null,
+  "windows": 2025,
+  "tokens": 2073600,
+  "bytes": 8110848,
+  "eos_targets": 9118,
+  "loss": 1.5638986083607616,
+  "perplexity": 4.777410237487284,
+  "bpb": 0.5768220500127922,
+  "seconds": 23.92809025000315,
+  "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"
+}

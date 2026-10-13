@@ -483,3 +483,33 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   the sweep should be extended upward (e.g. 2.4e-3) before choosing the 125M LR. 300 steps cover only
   warmup and the start of decay; short runs favour high LRs, so the long-run behaviour of 1.2e-3 is
   untested. One seed per LR. Throughput is contended (see above).
+
+## EXP-014 — Full-split evaluation of the 10m model: bits per byte (Phase 8 tooling)
+- Date: 2026-10-13
+- Git SHA: 865c60b (clean for tracked files)
+- Checkpoint: `runs/10m-a/checkpoints/step_0009000.pt` (EXP-012)
+- Commands: `uv run python scripts/eval_checkpoint.py --checkpoint runs/10m-a/checkpoints/step_0009000.pt
+  --precision <p> --out experiments/eval-10m-a-step9000-<p>-2026-10-13.json` for `<p>` = `bf16-autocast`
+  (the checkpoint's training precision) and `fp32`; batch size 32 and val path from the checkpoint config
+- Raw output: [`eval-10m-a-step9000-2026-10-13.txt`](eval-10m-a-step9000-2026-10-13.txt),
+  [`eval-10m-a-step9000-bf16-autocast-2026-10-13.json`](eval-10m-a-step9000-bf16-autocast-2026-10-13.json),
+  [`eval-10m-a-step9000-fp32-2026-10-13.json`](eval-10m-a-step9000-fp32-2026-10-13.json)
+- Hardware state: AC power; the Ollama `llama-server` process was still loaded (timing only).
+- Data: TinyStories val shard (2,074,361 tokens, EXP-004), 2,025 non-overlapping 1,024-token windows =
+  2,073,600 target tokens (the last 760 targets of the shard do not fill a window), 8,110,848 bytes,
+  9,118 EOS targets (in the loss, 0 bytes).
+- Metrics (source: the JSON files):
+
+  | precision | loss (nats/token) | perplexity | bits per byte | seconds |
+  |---|---|---|---|---|
+  | bf16-autocast | 1.56407 | 4.7782 | **0.57688** | 25.0 |
+  | fp32 | 1.56390 | 4.7774 | 0.57682 | 23.9 |
+
+- Observations: the full-split loss (1.5641) is 0.008 below the 20-batch training-time val loss at
+  step 9000 (1.5725, EXP-012), so the 20-batch estimate was close. bf16 and fp32 differ by 1.7e-4 nats
+  per token. Bytes per target token here are 3.911 (8,110,848 / 2,073,600), lower than the 3.988 of
+  EXP-003 because EOS targets count 0 bytes.
+- Caveats: non-overlapping windows, so early positions in each window have short context; a
+  sliding-window evaluation would give a somewhat lower number. Bits per byte is comparable across
+  tokenizers only for the same text and the same window convention. Single checkpoint, single split;
+  timings were measured with another process on the GPU.

@@ -1,0 +1,9 @@
+# 2026-10-13 10:37:49 | git 865c60b | Now drawing from 'AC Power' | ollama llama-server running: yes
+# command: uv run python scripts/eval_checkpoint.py --checkpoint runs/10m-a/checkpoints/step_0009000.pt --precision bf16-autocast --out experiments/eval-10m-a-step9000-bf16-autocast-2026-10-13.json
+2026-10-13 10:37:50 INFO    syrinx.utils.device: Using device mps (from auto-detect)
+{"checkpoint": "runs/10m-a/checkpoints/step_0009000.pt", "step": 9000, "val_path": "data_cache/tokens/tinystories/val", "seq_len": 1024, "batch_size": 32, "precision": "bf16-autocast", "max_batches": null, "windows": 2025, "tokens": 2073600, "bytes": 8110848, "eos_targets": 9118, "loss": 1.5640674751187549, "perplexity": 4.778217051385799, "bpb": 0.5768843341461779, "seconds": 25.029686750029214, "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"}
+exit 0
+# command: uv run python scripts/eval_checkpoint.py --checkpoint runs/10m-a/checkpoints/step_0009000.pt --precision fp32 --out experiments/eval-10m-a-step9000-fp32-2026-10-13.json
+2026-10-13 10:38:16 INFO    syrinx.utils.device: Using device mps (from auto-detect)
+{"checkpoint": "runs/10m-a/checkpoints/step_0009000.pt", "step": 9000, "val_path": "data_cache/tokens/tinystories/val", "seq_len": 1024, "batch_size": 32, "precision": "fp32", "max_batches": null, "windows": 2025, "tokens": 2073600, "bytes": 8110848, "eos_targets": 9118, "loss": 1.5638986083607616, "perplexity": 4.777410237487284, "bpb": 0.5768220500127922, "seconds": 23.92809025000315, "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"}
+exit 0
