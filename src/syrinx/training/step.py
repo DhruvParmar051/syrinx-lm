@@ -47,7 +47,7 @@ def autocast_context(device_type: str, precision: str) -> contextlib.AbstractCon
         return contextlib.nullcontext()
     if precision == "bf16-autocast":
         return torch.autocast(device_type=device_type, dtype=torch.bfloat16)
-    raise ValueError(f"Unkown precision {precision!r}; expected 'fp32' or 'bf16-autocast'.")
+    raise ValueError(f"Unknown precision {precision!r}; expected 'fp32' or 'bf16-autocast'.")
 
 
 def train_step(
