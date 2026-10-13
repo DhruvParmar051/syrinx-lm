@@ -513,3 +513,30 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   sliding-window evaluation would give a somewhat lower number. Bits per byte is comparable across
   tokenizers only for the same text and the same window convention. Single checkpoint, single split;
   timings were measured with another process on the GPU.
+
+## EXP-015 — Hugging Face export of the 10m model: parity and HF-only generation (Phase 9)
+- Date: 2026-10-13
+- Git SHA: 83a7cc9 (clean for tracked files)
+- Checkpoint: `runs/10m-a/checkpoints/step_0009000.pt` (EXP-012)
+- Command: `uv run python scripts/export_hf.py --checkpoint runs/10m-a/checkpoints/step_0009000.pt
+  --out-dir exports/syrinx-10m` (defaults: parity batch 2, seq len = max_seq_len 1024, seed 0); then an
+  HF-only generation check with `AutoModelForCausalLM` / `AutoTokenizer` and the exported
+  `generation_config.json` (`torch.manual_seed(0)`, prompt `<|endoftext|>Once upon a time`, 200 new tokens max)
+- Raw output: [`export-10m-a-step9000-2026-10-13.txt`](export-10m-a-step9000-2026-10-13.txt) (script
+  output, file sizes, SHA-256 of every exported file, the generation record) and
+  [`export-10m-a-step9000-parity-2026-10-13.json`](export-10m-a-step9000-parity-2026-10-13.json)
+  (copy of `parity.json`); the export itself is in `exports/syrinx-10m/` (not tracked)
+- Hardware state: AC power
+- Metrics (source: the parity file):
+  - Logit parity, Syrinx vs the reloaded `LlamaForCausalLM`, fp32 on the CPU, 2 x 1,024 random ids:
+    max abs difference **0.0** (tolerance 1e-4). PASS.
+  - Tokenizer parity on the 4 `PARITY_TEXTS` (accents, emoji, CJK, digits, tabs, `\r\n`): HF ids equal
+    ours and decoding is lossless. PASS.
+  - Export: `model.safetensors` 47,199,272 bytes (fp32, tied head not stored), `tokenizer.json`
+    2,328,862 bytes, plus `config.json`, `tokenizer_config.json`, `generation_config.json`; transformers 5.17.0.
+  - HF-only generation: sampling with the exported defaults (do_sample, temperature 0.8, top-k 50) produced
+    175 new tokens and stopped at `<|endoftext|>`; the text is a coherent TinyStories-style story.
+- Result: Gate for Phase 9 on the 10m model met (parity at most 1e-4). The difference is exactly 0, as
+  expected: both sides run the same fp32 operations in the same order on the CPU.
+- Caveats: parity uses random ids, not natural text; one checkpoint (10m). The 50M and 125M exports need
+  their own parity runs. Generation was checked on one prompt and one seed.

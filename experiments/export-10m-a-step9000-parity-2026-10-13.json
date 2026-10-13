@@ -1,0 +1,13 @@
+{
+  "checkpoint": "runs/10m-a/checkpoints/step_0009000.pt",
+  "step": 9000,
+  "out_dir": "exports/syrinx-10m",
+  "transformers_version": "5.17.0",
+  "batch": 2,
+  "seq_len": 1024,
+  "max_abs_logit_diff": 0.0,
+  "tolerance": 0.0001,
+  "logits_ok": true,
+  "tokenizer_ok": true,
+  "passed": true
+}

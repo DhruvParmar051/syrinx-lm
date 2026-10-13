@@ -1,0 +1,22 @@
+# 2026-10-13 19:16:55 | git 83a7cc9 | Now drawing from 'Battery Power'
+# command: uv run python scripts/export_hf.py --checkpoint runs/10m-a/checkpoints/step_0009000.pt --out-dir exports/syrinx-10m
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00, 161.60it/s]
+Loading weights:   0%|          | 0/38 [00:00<?, ?it/s]Loading weights: 100%|██████████| 38/38 [00:00<00:00, 6467.70it/s]
+{"checkpoint": "runs/10m-a/checkpoints/step_0009000.pt", "step": 9000, "out_dir": "exports/syrinx-10m", "transformers_version": "5.17.0", "batch": 2, "seq_len": 1024, "max_abs_logit_diff": 0.0, "tolerance": 0.0001, "logits_ok": true, "tokenizer_ok": true, "passed": true}
+exit 0
+# files:
+717 config.json
+182 generation_config.json
+47199272 model.safetensors
+296 parity.json
+2328862 tokenizer.json
+231 tokenizer_config.json
+# sha256:
+d77f325ab8bb832a4367719b90d3bcbc7398813cc76f89efa98ce6286b43993a  exports/syrinx-10m/config.json
+32c24aff9c1840d4b47b6b1e3a68308d2ec6879d6eb6183dda05b0935a5f60c4  exports/syrinx-10m/generation_config.json
+5e50d4d295bc69a052ba3d024413946fa5e801bdefc725a8634f4fe44bd50f8a  exports/syrinx-10m/model.safetensors
+e78bcefc5b370ab4b22090031901274f41c88ae027844e38e2721249a76fdc9f  exports/syrinx-10m/parity.json
+51349fdd96dea09960c891aec37503b36f0e86d133e96a4912585750ab29e328  exports/syrinx-10m/tokenizer.json
+f6b082a2985585bae2fa637a2199e4738a999f3cfc615ed9245c5f13afe96ed6  exports/syrinx-10m/tokenizer_config.json
+# HF-only generation check: AutoModelForCausalLM.generate with the exported generation_config, torch.manual_seed(0)
+{"prompt": "<|endoftext|>Once upon a time", "settings": {"do_sample": true, "temperature": 0.8, "top_k": 50}, "new_tokens": 175, "stopped_at_eos": true, "text": ", there was a small girl named Amy. She was three years old and ready for a new adventure. One day, she decided to go on a bike ride. \n\nAmy pedaled very fast and she was so excited to go. When she got to the park, she was amazed by all the new things she saw. Everywhere she went she saw people singing and laughing. She wanted to explore, so she started riding through the park.\n\nHer ride felt really calm and happy. She started to look up at the sky and noticed some more things. She couldn't believe how tall and beautiful they were. She started to ride higher and higher. She felt so happy and free.\n\nSoon, Amy had to go home. She had a great time and she was still a little bit tired. But she had had a great adventure."}
