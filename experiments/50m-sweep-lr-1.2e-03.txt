@@ -1,0 +1,40 @@
+# 2026-10-13 00:28:53 | git 3acca9f | Now drawing from 'AC Power' | train attempt 1: --out-dir runs/50m-sweep/lr-1.2e-03  --config runs/50m-sweep/lr-1.2e-03.yaml --stop-at-step 300 --log-interval 10 --eval-interval 100 --eval-batches 100 --ckpt-interval 100 --keep-last 1
+2026-10-13 00:28:54 INFO    syrinx.utils.device: Using device mps (from auto-detect)
+2026-10-13 00:34:31 INFO    __main__: step 10 loss 9.5241 lr 6.00e-05
+2026-10-13 00:40:06 INFO    __main__: step 20 loss 8.9356 lr 1.20e-04
+2026-10-13 00:45:45 INFO    __main__: step 30 loss 8.1441 lr 1.80e-04
+2026-10-13 00:51:22 INFO    __main__: step 40 loss 7.4173 lr 2.40e-04
+2026-10-13 00:57:00 INFO    __main__: step 50 loss 6.9651 lr 3.00e-04
+2026-10-13 01:02:38 INFO    __main__: step 60 loss 6.6594 lr 3.60e-04
+2026-10-13 01:08:15 INFO    __main__: step 70 loss 6.3919 lr 4.20e-04
+2026-10-13 01:13:50 INFO    __main__: step 80 loss 6.2150 lr 4.80e-04
+2026-10-13 01:19:26 INFO    __main__: step 90 loss 6.1310 lr 5.40e-04
+2026-10-13 01:25:02 INFO    __main__: step 100 loss 6.0411 lr 6.00e-04
+2026-10-13 01:25:43 INFO    __main__: step 100 val_loss 5.9779
+2026-10-13 01:31:22 INFO    __main__: step 110 loss 5.9054 lr 6.60e-04
+2026-10-13 01:37:00 INFO    __main__: step 120 loss 5.8587 lr 7.20e-04
+2026-10-13 01:42:37 INFO    __main__: step 130 loss 5.7299 lr 7.80e-04
+2026-10-13 01:48:14 INFO    __main__: step 140 loss 5.6407 lr 8.40e-04
+2026-10-13 01:53:50 INFO    __main__: step 150 loss 5.5649 lr 9.00e-04
+2026-10-13 01:59:28 INFO    __main__: step 160 loss 5.4676 lr 9.60e-04
+2026-10-13 02:05:05 INFO    __main__: step 170 loss 5.4504 lr 1.02e-03
+2026-10-13 02:10:44 INFO    __main__: step 180 loss 5.3831 lr 1.08e-03
+2026-10-13 02:16:22 INFO    __main__: step 190 loss 5.2618 lr 1.14e-03
+2026-10-13 02:21:58 INFO    __main__: step 200 loss 5.2315 lr 1.20e-03
+2026-10-13 02:22:38 INFO    __main__: step 200 val_loss 5.1977
+2026-10-13 02:28:16 INFO    __main__: step 210 loss 5.1618 lr 1.20e-03
+2026-10-13 02:33:54 INFO    __main__: step 220 loss 5.0733 lr 1.20e-03
+2026-10-13 02:39:31 INFO    __main__: step 230 loss 5.0351 lr 1.20e-03
+2026-10-13 02:45:09 INFO    __main__: step 240 loss 4.9834 lr 1.20e-03
+2026-10-13 02:50:48 INFO    __main__: step 250 loss 4.9348 lr 1.20e-03
+2026-10-13 02:56:25 INFO    __main__: step 260 loss 4.8982 lr 1.20e-03
+2026-10-13 03:02:03 INFO    __main__: step 270 loss 4.8311 lr 1.20e-03
+2026-10-13 03:07:41 INFO    __main__: step 280 loss 4.8310 lr 1.20e-03
+2026-10-13 03:13:17 INFO    __main__: step 290 loss 4.7353 lr 1.20e-03
+2026-10-13 03:18:56 INFO    __main__: step 300 loss 4.7014 lr 1.20e-03
+2026-10-13 03:19:37 INFO    __main__: step 300 val_loss 4.6752
+{"end_step": 300, "out_dir": "runs/50m-sweep/lr-1.2e-03", "start_step": 0, "train_loss": 4.701412200927734, "val_loss": 4.675170724391937}
+real 10245.17
+user 66.32
+sys 887.78
+exit 0

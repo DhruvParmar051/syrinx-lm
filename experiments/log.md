@@ -433,3 +433,53 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
 - Caveats: one seed; the val loss is a 20-batch mean (655,360 tokens), not the full split; the sample
   judgement is qualitative, from 3 prompts. Half the run shared the GPU with another process, so its
   wall clock and throughput are not a clean measurement of this config.
+
+## EXP-013 — 50M learning-rate sweep (Phase 5)
+- Date: 2026-10-13 00:28 to 09:01
+- Git SHA: 3acca9f (clean for tracked files)
+- Config: `configs/syrinx-50m.yaml` (micro-batch 16 x accum 16 = 262,144 tokens/step, seq 1024,
+  bf16-autocast, warmup 200, max_steps 3815, seed 1337) with only `lr` and `min_lr = lr/10` changed per
+  run (`scripts/lr_sweep.py make-configs`); data FineWeb-Edu `sample-10BT` shards (EXP-005)
+- Commands: `scripts/run_phase5.sh` stage 3, i.e. per LR `uv run python scripts/train.py --out-dir
+  runs/50m-sweep/<lr-tag> --config runs/50m-sweep/<lr-tag>.yaml --stop-at-step 300 --log-interval 10
+  --eval-interval 100 --eval-batches 100 --ckpt-interval 100 --keep-last 1`; then
+  `scripts/lr_sweep.py pick --step 300` (rule in docs/decisions.md, 2026-10-12)
+- Raw output: [`50m-sweep-lr-3.0e-04.txt`](50m-sweep-lr-3.0e-04.txt),
+  [`50m-sweep-lr-6.0e-04.txt`](50m-sweep-lr-6.0e-04.txt),
+  [`50m-sweep-lr-1.2e-03.txt`](50m-sweep-lr-1.2e-03.txt), pick output
+  [`50m-lr-sweep-summary.json`](50m-lr-sweep-summary.json), pipeline log
+  [`phase5-pipeline.txt`](phase5-pipeline.txt); per-step records in `runs/50m-sweep/*/metrics.jsonl`
+  (not tracked)
+- Hardware state: AC power throughout. The Ollama `llama-server` process from EXP-012 stayed loaded on
+  the GPU for the whole sweep.
+- Tokens / steps: 300 steps x 262,144 = 78,643,200 tokens per run, all inside the 200-step warmup and
+  the start of the cosine decay. Val: the first 100 val batches (1,638,400 tokens), same windows for
+  every run.
+- Metrics (source: `metrics.jsonl` and the summary file):
+
+  | peak LR | val@100 | val@200 | val@300 | train@300 | max grad norm after step 200 | stable |
+  |---|---|---|---|---|---|---|
+  | 3e-4 | 6.7321 | 5.7158 | 5.1935 | 5.2262 | 1.017 | yes |
+  | 6e-4 | 6.2522 | 5.4332 | 4.8629 | 4.8934 | 0.861 | yes |
+  | **1.2e-3** | **5.9779** | **5.1977** | **4.6752** | 4.7014 | 0.617 | yes |
+
+  No non-finite loss or grad norm in any run; no loss spike above the 1.0-nat threshold.
+- Pick: **1.2e-3** (`runs/50m-a.yaml`): lowest val loss at step 300, 0.188 below 6e-4 and 0.518 below
+  3e-4; no lower LR within the 0.01 tolerance.
+- Peak memory: 17.94 GiB in all three runs vs 16.01 GiB estimated (20.01 GiB with the x1.25 margin):
+  +12% over the unmargined estimate, inside the margined one. Proxy (EXP-000): 24.2 GiB driver memory.
+- Throughput: median 7,775 / 7,874 / 7,766 tok/s (3e-4 / 6e-4 / 1.2e-3, logged steps 20-300; overall
+  range 7,437-8,140); median step time 33.3-33.8 s. The EXP-000 proxy measured 13,362 tok/s for 50M
+  mb16 bf16: this is 42% lower, measured while another process shared the GPU (EXP-012 showed that
+  process halving the 10m throughput). Not a clean measurement of the 50M config.
+- Eval cost: 41-43 s per 100-batch evaluation (log timestamps), against the 41 s estimate.
+- Wall clock: 10,255 / 10,224 / 10,245 s per run (2.85 h each). Checkpoint size 610,527,323 bytes
+  (estimate 0.61 GB).
+- Observations: val loss is ordered by LR at every evaluation (higher LR lower), with the gap between
+  1.2e-3 and 6e-4 shrinking from 0.274 at step 100 to 0.188 at step 300. The full 50M run was not
+  started: the pipeline controller was stopped at 08:28 by request, the 6e-4 run finished on its own
+  (its log therefore has no `exit` line), and the pick was run separately at 09:01 (pipeline log).
+- Caveats: the best LR is the highest tried, so the optimum may be above 1.2e-3; per docs/decisions.md
+  the sweep should be extended upward (e.g. 2.4e-3) before choosing the 125M LR. 300 steps cover only
+  warmup and the start of decay; short runs favour high LRs, so the long-run behaviour of 1.2e-3 is
+  untested. One seed per LR. Throughput is contended (see above).
