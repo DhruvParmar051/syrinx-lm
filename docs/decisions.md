@@ -231,5 +231,26 @@ cost an estimated ~41 s per eval, about 1% of the run.
 measured 50M throughput differs from the proxy by more than 30%, or the val curve is too noisy at 100
 batches.
 
+## 2026-10-13 — Hugging Face export format
+**Context:** Phase 9 exports checkpoints as `LlamaForCausalLM` folders (no `trust_remote_code`). Three
+choices were open: how the EOS-before-document convention reaches HF users, how literal special-token
+strings in text are encoded, and the weight dtype.
+**Decision:**
+- `<|endoftext|>` (id 0) is the tokenizer's BOS and EOS token and the config's `bos_token_id` and
+  `eos_token_id`; `<|pad|>` (id 1) is `pad_token_id`. BOS is **not** prepended automatically; tools that
+  can prepend it (lm-evaluation-harness `add_bos_token=True`) are told to, and the model card says that
+  prompts work best after `<|endoftext|>`, as in training.
+- Literal `<|endoftext|>` / `<|pad|>` strings in input text follow HF's default and become the special
+  tokens (our training encoder treats them as plain text). On ordinary text the HF tokenizer's ids are
+  identical to ours (tested).
+- Weights are exported in fp32 (`model.safetensors`); the tied `lm_head` is not stored.
+- The export must pass logit parity: max abs difference between Syrinx and the reloaded HF model on
+  random ids, fp32 on the CPU, at most 1e-4 (`scripts/export_hf.py` writes `parity.json`).
+**Why:** HF's Llama defaults (bos 1, eos 2, `rms_norm_eps` 1e-6) are wrong for this vocabulary and
+model, so every value is set explicitly. Auto-prepending BOS would add a token to every `tokenizer(text)`
+call and surprise users; fp32 is lossless and is what parity is checked in.
+**Revisit if:** benchmarks show a large difference with and without the leading EOS (consider a
+post-processor), or the release needs a smaller bf16 copy (add it alongside the fp32 weights).
+
 ## Open (not yet decided)
 - 125M batch and LR: to be set from the 50M sweep and the Gate 6a throughput measurement.
