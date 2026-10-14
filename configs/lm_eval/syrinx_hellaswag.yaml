@@ -1,0 +1,22 @@
+# Stock lm-eval `hellaswag` (0.4.13) on the pinned local file (docs/data.md, EXP-016).
+task: syrinx_hellaswag
+dataset_path: json
+dataset_kwargs:
+  data_files:
+    validation: data_cache/benchmarks/hellaswag.jsonl
+output_type: multiple_choice
+validation_split: validation
+test_split: null
+process_docs: !function utils.process_docs
+doc_to_text: "{{query}}"
+doc_to_target: "{{label}}"
+doc_to_choice: "choices"
+metric_list:
+  - metric: acc
+    aggregation: mean
+    higher_is_better: true
+  - metric: acc_norm
+    aggregation: mean
+    higher_is_better: true
+metadata:
+  version: 1.0

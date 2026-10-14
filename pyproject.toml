@@ -21,7 +21,10 @@ dependencies = [
 # Phase 9: HF export + logit-parity test against LlamaForCausalLM.
 export = ["transformers>=4.45"]
 # Phase 8: benchmarks via lm-evaluation-harness.
-eval = ["lm-eval>=0.4"]
+eval = [
+    "accelerate>=1.15.0",
+    "lm-eval>=0.4",
+]
 
 [dependency-groups]
 dev = [

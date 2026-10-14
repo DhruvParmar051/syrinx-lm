@@ -1,0 +1,19 @@
+# Stock lm-eval `lambada_openai` (0.4.13) on the pinned local file (docs/data.md, EXP-016).
+task: syrinx_lambada
+dataset_path: json
+dataset_kwargs:
+  data_files:
+    test: data_cache/benchmarks/lambada.jsonl
+output_type: loglikelihood
+test_split: test
+doc_to_text: "{{text.split(' ')[:-1]|join(' ')}}"
+doc_to_target: "{{' '+text.split(' ')[-1]}}"
+metric_list:
+  - metric: perplexity
+    aggregation: perplexity
+    higher_is_better: false
+  - metric: acc
+    aggregation: mean
+    higher_is_better: true
+metadata:
+  version: 1.0
