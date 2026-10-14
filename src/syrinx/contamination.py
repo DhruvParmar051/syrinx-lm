@@ -113,7 +113,9 @@ def scan_document(text: str, index: BenchmarkIndex) -> dict[str, str]:
     words = normalize_words(text=text)
     if len(words) < index.n or len(index.hashes) == 0:
         return {}
-    candidates = np.flatnonzero(np.isin(ngram_hashes(word_hashes(words), index.n), index.hashes))
+    window = ngram_hashes(word_hashes(words), index.n)
+    pos = np.minimum(np.searchsorted(index.hashes, window), len(index.hashes) - 1)
+    candidates = np.flatnonzero(index.hashes[pos] == window)
     hits: dict[str, str] = {}
     for j in candidates:
         gram = tuple(words[j : j + index.n])

@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+import time
 import warnings
 import zlib
 from pathlib import Path
@@ -279,3 +280,16 @@ def test_exactly_n_words_is_checked() -> None:
     index = build_index({"edge": thirteen, "twelve": " ".join(thirteen.split()[:12])})
     assert index.unchecked == ["twelve"]
     assert set(scan_document(f"before {thirteen} after", index)) == {"edge"}
+
+
+def test_scan_document_fast_with_large_index() -> None:
+    """Lookups must not re-sort the index per document (np.isin did: ~0.9 s per document at
+    1.7M benchmark n-grams, about 60 h for the full train set). Sorted lookup is ~ms."""
+    rng = np.random.default_rng(0)
+    big = np.unique(rng.integers(0, 2**63, 2_000_000, dtype=np.uint64))
+    index = BenchmarkIndex(n=13, hashes=big, owners={}, unchecked=[])
+    doc = " ".join(f"w{i}" for i in range(2000))
+    start = time.perf_counter()
+    for _ in range(20):
+        scan_document(doc, index)
+    assert time.perf_counter() - start < 1.0
