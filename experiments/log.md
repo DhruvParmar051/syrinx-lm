@@ -583,3 +583,38 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   after 31 min with no output and replaced by a binary search (commit c9955fe, 0.024 ms per document).
 - Caveats: exact 13-gram overlap after normalization misses paraphrases and shorter overlaps; unchecked
   examples (229) are not known to be clean; only the matched n-grams listed in the JSON were inspected by eye.
+
+## EXP-017 — Benchmarks for the 10m model, overall and on clean examples (Phase 8)
+- Date: 2026-10-14
+- Git SHA: 9ef7d6f (clean for tracked files)
+- Model: `exports/syrinx-10m` (EXP-015; the 10m TinyStories model of EXP-012, step 9000)
+- Command: `uv run python scripts/run_benchmarks.py --model-dir exports/syrinx-10m --out
+  experiments/benchmarks-10m-a-2026-10-14.json` (lm-eval 0.4.13, local task configs on the pinned files,
+  0-shot, fp32, `add_bos_token=True`, batch size 32, MPS, offline)
+- Raw output: [`benchmarks-10m-a-2026-10-14.json`](benchmarks-10m-a-2026-10-14.json) (all metrics, every
+  subset, hashes and versions), [`benchmarks-10m-a-2026-10-14.txt`](benchmarks-10m-a-2026-10-14.txt)
+- Hardware state: battery power
+- Metrics (source: the JSON file; ± is the binomial standard error; chance for ARC-Easy computed from the
+  file: 2,365 four-choice, 7 three-choice, 4 five-choice questions):
+
+  | benchmark | metric | all (n) | clean (n) | chance | all vs chance |
+  |---|---|---|---|---|---|
+  | HellaSwag | acc_norm | 0.2586 ± 0.0044 (10,042) | 0.2587 ± 0.0044 (10,002) | 0.25 | +2.0 SE |
+  | ARC-Easy | acc | 0.2698 ± 0.0091 (2,376) | 0.2722 ± 0.0093 (2,278) | 0.2502 | +2.2 SE |
+  | PIQA | acc_norm | 0.5305 ± 0.0116 (1,838) | 0.5351 ± 0.0122 (1,682) | 0.5 | +2.6 SE |
+  | LAMBADA | acc | 0.0778 ± 0.0037 (5,153) | 0.0778 ± 0.0037 (5,153) | ~0 | |
+  | LAMBADA | perplexity | 75,330 | 75,330 | | |
+
+  Also recorded: HellaSwag acc 0.2614, ARC-Easy acc_norm 0.2698, PIQA acc 0.5419. Contaminated subsets:
+  HellaSwag 40, ARC-Easy 22, PIQA 3 examples (too few for any conclusion). Unchecked: ARC-Easy 76, PIQA 153.
+  Unmatched: 0 in every benchmark. The "all" value equals lm-eval's own aggregate for every metric.
+- Time: 111.1 s harness time (113.6 s wall), against an estimate of about 6 min scaled from a
+  200-example-per-task run (13.3 s); the estimate scaled the fixed start-up cost along with the work.
+- Observations: on the three multiple-choice benchmarks the 10m model is 2.0-2.6 standard errors above
+  chance; LAMBADA accuracy is 7.8% with perplexity 75,330. This model was trained only on TinyStories
+  (children's stories), and these benchmarks are general-domain text, so near-chance results are the
+  expected outcome, not a defect. Clean-subset scores are within one standard error of the full-set
+  scores, so the flagged contamination (EXP-016) does not change any number here.
+- Caveats: one model, one run, 0-shot; scores near chance are sensitive to prompt format, so they are only
+  comparable to runs with the same task configs (`task_config_sha256` in the JSON). Not comparable with
+  published scores of other models without matching data, prompts and normalization.
