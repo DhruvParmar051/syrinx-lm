@@ -103,8 +103,9 @@ def build_index(examples: Mapping[str, str], n: int = N) -> BenchmarkIndex:
 def scan_document(text: str, index: BenchmarkIndex) -> dict[str, str]:
     """Contaminated example ids found in one training document.
 
-    Candidates are windows whose hash is in ``index.hashes`` (``np.isin``); a candidate counts
-    only if its words are a key of ``index.owners``. Windows never cross document boundaries
+    Candidates are windows whose hash is in the sorted ``index.hashes`` (binary search with
+    ``np.searchsorted``, never ``np.isin``, which re-sorts the whole index on every call); a
+    candidate counts only if its words are a key of ``index.owners``. Windows never cross document boundaries
     (the caller passes one document at a time).
 
     Returns:
