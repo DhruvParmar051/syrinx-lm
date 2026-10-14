@@ -20,8 +20,8 @@ datasets: [tinystories]
 hardware: Apple M5 Pro laptop (20-core GPU, 48 GB unified memory), PyTorch MPS backend
 summary: >-
   The smallest Syrinx model: a decoder-only transformer trained from scratch on TinyStories, a corpus
-  of short synthetic children's stories. It is the first rung of a 10M / 50M / 125M scaling ladder and
-  exists to validate the training, evaluation and export pipeline end to end.
+  of short synthetic children's stories. It is the first of three models (10M, 50M, 125M) in a scaling
+  series and exists to validate the training, evaluation and export pipeline end to end.
 intended_use: >-
   Generating short, simple children's stories, and studying a small language model trained end to end on
   one laptop. It is a base model: it continues text and does not follow instructions.

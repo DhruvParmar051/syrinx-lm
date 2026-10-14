@@ -14,7 +14,7 @@ tags:
 
 # syrinx-10m
 
-The smallest Syrinx model: a decoder-only transformer trained from scratch on TinyStories, a corpus of short synthetic children's stories. It is the first rung of a 10M / 50M / 125M scaling ladder and exists to validate the training, evaluation and export pipeline end to end.
+The smallest Syrinx model: a decoder-only transformer trained from scratch on TinyStories, a corpus of short synthetic children's stories. It is the first of three models (10M, 50M, 125M) in a scaling series and exists to validate the training, evaluation and export pipeline end to end.
 
 ## Model details
 
