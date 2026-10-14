@@ -1,0 +1,362 @@
+{
+  "n": 13,
+  "normalization": "nfkc-lower-alnum-words",
+  "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8",
+  "max_docs_per_shard": null,
+  "shards": [
+    {
+      "shard": "data_cache/tokens/tinystories/train/train_0000.bin",
+      "documents": 434619,
+      "words": 77442560,
+      "seconds": 194.96979187499528
+    },
+    {
+      "shard": "data_cache/tokens/tinystories/train/train_0001.bin",
+      "documents": 434655,
+      "words": 77402154,
+      "seconds": 196.34662099999696
+    },
+    {
+      "shard": "data_cache/tokens/tinystories/train/train_0002.bin",
+      "documents": 442404,
+      "words": 77518165,
+      "seconds": 196.79030258299463
+    },
+    {
+      "shard": "data_cache/tokens/tinystories/train/train_0003.bin",
+      "documents": 443472,
+      "words": 77524890,
+      "seconds": 197.0173659170032
+    },
+    {
+      "shard": "data_cache/tokens/tinystories/train/train_0004.bin",
+      "documents": 50321,
+      "words": 8876033,
+      "seconds": 22.774243291998573
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0000.bin",
+      "documents": 92213,
+      "words": 73333470,
+      "seconds": 178.53785937499924
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0001.bin",
+      "documents": 94267,
+      "words": 73459383,
+      "seconds": 179.68648983300227
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0002.bin",
+      "documents": 94676,
+      "words": 73477265,
+      "seconds": 177.72442366600444
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0003.bin",
+      "documents": 92698,
+      "words": 73335740,
+      "seconds": 178.0626808340021
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0004.bin",
+      "documents": 91528,
+      "words": 73090963,
+      "seconds": 176.8597498750023
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0005.bin",
+      "documents": 93202,
+      "words": 73295575,
+      "seconds": 175.98004920800304
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0006.bin",
+      "documents": 92523,
+      "words": 73192768,
+      "seconds": 178.93765387500025
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0007.bin",
+      "documents": 92759,
+      "words": 73344898,
+      "seconds": 179.10177508400375
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0008.bin",
+      "documents": 94812,
+      "words": 73597998,
+      "seconds": 178.88237945799483
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0009.bin",
+      "documents": 94755,
+      "words": 73471362,
+      "seconds": 178.40364129199588
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0010.bin",
+      "documents": 94980,
+      "words": 73492053,
+      "seconds": 179.26474504199723
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0011.bin",
+      "documents": 92340,
+      "words": 73581846,
+      "seconds": 178.23021800000424
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0012.bin",
+      "documents": 92793,
+      "words": 73408990,
+      "seconds": 151.38370895799744
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0013.bin",
+      "documents": 93757,
+      "words": 73481689,
+      "seconds": 150.66954624999926
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0014.bin",
+      "documents": 93100,
+      "words": 73367862,
+      "seconds": 153.54264604099444
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0015.bin",
+      "documents": 91881,
+      "words": 73386910,
+      "seconds": 153.6593010420038
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0016.bin",
+      "documents": 93039,
+      "words": 73416141,
+      "seconds": 152.2203300830006
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0017.bin",
+      "documents": 93889,
+      "words": 73551595,
+      "seconds": 153.37732250000408
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0018.bin",
+      "documents": 94372,
+      "words": 73618676,
+      "seconds": 152.75837229099852
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0019.bin",
+      "documents": 93019,
+      "words": 73518594,
+      "seconds": 152.8825272499962
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0020.bin",
+      "documents": 92997,
+      "words": 73410582,
+      "seconds": 152.48599954200472
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0021.bin",
+      "documents": 93055,
+      "words": 73298296,
+      "seconds": 152.21524558300007
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0022.bin",
+      "documents": 92650,
+      "words": 73305516,
+      "seconds": 152.81105374999606
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0023.bin",
+      "documents": 94019,
+      "words": 73486488,
+      "seconds": 140.5453781660035
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0024.bin",
+      "documents": 94507,
+      "words": 73573265,
+      "seconds": 139.5749802499995
+    },
+    {
+      "shard": "data_cache/tokens/fineweb-edu/train/train_0025.bin",
+      "documents": 640,
+      "words": 483825,
+      "seconds": 1.1537688330063247
+    }
+  ],
+  "documents": 4139942,
+  "words": 2154745552,
+  "seconds": 365.5511857090023,
+  "benchmarks": {
+    "hellaswag": {
+      "path": "data_cache/benchmarks/hellaswag.jsonl",
+      "examples": 10042,
+      "unchecked": 0,
+      "checked": 10042,
+      "contaminated": 40,
+      "contaminated_pct": 0.39832702648874724,
+      "contaminated_ids": [
+        "hellaswag/10007",
+        "hellaswag/3343",
+        "hellaswag/3635",
+        "hellaswag/4552",
+        "hellaswag/4844",
+        "hellaswag/4849",
+        "hellaswag/5060",
+        "hellaswag/5306",
+        "hellaswag/5425",
+        "hellaswag/5679",
+        "hellaswag/5829",
+        "hellaswag/5831",
+        "hellaswag/6221",
+        "hellaswag/6297",
+        "hellaswag/6390",
+        "hellaswag/6529",
+        "hellaswag/6609",
+        "hellaswag/6689",
+        "hellaswag/7063",
+        "hellaswag/7197",
+        "hellaswag/7429",
+        "hellaswag/7445",
+        "hellaswag/7478",
+        "hellaswag/7826",
+        "hellaswag/7955",
+        "hellaswag/8014",
+        "hellaswag/8084",
+        "hellaswag/8212",
+        "hellaswag/8256",
+        "hellaswag/8399",
+        "hellaswag/8431",
+        "hellaswag/8492",
+        "hellaswag/8581",
+        "hellaswag/8615",
+        "hellaswag/8757",
+        "hellaswag/9042",
+        "hellaswag/9220",
+        "hellaswag/9418",
+        "hellaswag/9906",
+        "hellaswag/9909"
+      ],
+      "matches": [
+        {
+          "id": "hellaswag/10007",
+          "ngram": "the most common eating disorders are anorexia nervosa bulimia nervosa and binge eating"
+        },
+        {
+          "id": "hellaswag/3343",
+          "ngram": "more and more people in the world are becoming addicted to the internet"
+        },
+        {
+          "id": "hellaswag/3635",
+          "ngram": "at least twice a day once in the morning and once at night"
+        },
+        {
+          "id": "hellaswag/4552",
+          "ngram": "way to lose weight is to burn more calories than you take in"
+        },
+        {
+          "id": "hellaswag/4844",
+          "ngram": "apple or android tells you an update is ready download and install it"
+        }
+      ]
+    },
+    "arc_easy": {
+      "path": "data_cache/benchmarks/arc_easy.jsonl",
+      "examples": 2376,
+      "unchecked": 76,
+      "checked": 2300,
+      "contaminated": 22,
+      "contaminated_pct": 0.9565217391304348,
+      "contaminated_ids": [
+        "arc_easy/CSZ20770",
+        "arc_easy/CSZ30263",
+        "arc_easy/CSZ30768",
+        "arc_easy/LEAP_2000_8_1",
+        "arc_easy/LEAP__8_10366",
+        "arc_easy/MDSA_2007_8_4",
+        "arc_easy/MDSA_2007_8_6",
+        "arc_easy/MDSA_2008_8_24",
+        "arc_easy/MDSA_2008_8_25",
+        "arc_easy/MDSA_2012_8_35",
+        "arc_easy/MDSA_2012_8_36",
+        "arc_easy/MDSA_2013_8_7",
+        "arc_easy/MSA_2012_8_36",
+        "arc_easy/MSA_2012_8_9",
+        "arc_easy/Mercury_7018078",
+        "arc_easy/Mercury_7148155",
+        "arc_easy/Mercury_7165550",
+        "arc_easy/Mercury_7168613",
+        "arc_easy/Mercury_7191520",
+        "arc_easy/Mercury_SC_400118",
+        "arc_easy/TAKS_2009_8_12",
+        "arc_easy/TAKS_2009_8_17"
+      ],
+      "matches": [
+        {
+          "id": "arc_easy/CSZ20770",
+          "ngram": "iron oxides such as rust form when iron metal reacts with oxygen in"
+        },
+        {
+          "id": "arc_easy/CSZ30263",
+          "ngram": "falls the upward force of air resistance becomes equal to the downward pull"
+        },
+        {
+          "id": "arc_easy/CSZ30768",
+          "ngram": "which of the following elements is best able to combine with itself and"
+        },
+        {
+          "id": "arc_easy/LEAP_2000_8_1",
+          "ngram": "this in turn causes the average temperature on earth to rise which of"
+        },
+        {
+          "id": "arc_easy/LEAP__8_10366",
+          "ngram": "in recent years a form of mite has infected and killed the honey"
+        }
+      ]
+    },
+    "piqa": {
+      "path": "data_cache/benchmarks/piqa.jsonl",
+      "examples": 1838,
+      "unchecked": 153,
+      "checked": 1685,
+      "contaminated": 3,
+      "contaminated_pct": 0.17804154302670624,
+      "contaminated_ids": [
+        "piqa/1028",
+        "piqa/237",
+        "piqa/745"
+      ],
+      "matches": [
+        {
+          "id": "piqa/1028",
+          "ngram": "wash the storage container and rinse completely with water sanitize the container with"
+        },
+        {
+          "id": "piqa/237",
+          "ngram": "follow the 20 20 20 rule look at something 20 feet away for"
+        },
+        {
+          "id": "piqa/745",
+          "ngram": "look at something 20 feet away for 20 seconds every 20 minutes this"
+        }
+      ]
+    },
+    "lambada": {
+      "path": "data_cache/benchmarks/lambada.jsonl",
+      "examples": 5153,
+      "unchecked": 0,
+      "checked": 5153,
+      "contaminated": 0,
+      "contaminated_pct": 0.0,
+      "contaminated_ids": [],
+      "matches": []
+    }
+  }
+}

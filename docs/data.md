@@ -10,6 +10,23 @@ with the date it was checked. Leave a field blank rather than filling it from me
 | TinyStories | `roneneldan/TinyStories` | — (splits `train`, `validation`) | CDLA-Sharing-1.0 | 2026-10-11 | 10M model; tokenizer eval | not gated; dataset revision (commit) `f54c09fd23315a6f9c86f9dc80f725de7d8f9c64` (last modified 2024-08-12); `validation` has 21,990 rows, `train` 2,119,719; text column `text` |
 | FineWeb-Edu | `HuggingFaceFW/fineweb-edu` | `sample-10BT` | ODC-By v1.0; also subject to the Common Crawl Terms of Use | 2026-10-11 | tokenizer training; 50M/125M | not gated; dataset revision (commit) `87f09149ef4734204d70ed1d046ddc9ca3f2b8f9` (last modified 2025-07-11); `sample-10BT` train split has 9,672,101 rows; text column `text` |
 
+## Evaluation benchmarks (not used for training)
+
+Fetched 2026-10-14 at pinned revisions into `data_cache/benchmarks/` (git-ignored) and exported as
+JSONL; sources, file SHA-256 and row counts in
+[`benchmarks-fetch-2026-10-14.txt`](../experiments/benchmarks-fetch-2026-10-14.txt).
+
+| Benchmark | HF repo id | Revision | File (split) | Rows | License (from card) | Checked on |
+|---|---|---|---|---|---|---|
+| HellaSwag | `Rowan/hellaswag` | `218ec52e09a7e7462a5400043bb9a69a41d06b76` | `data/validation-00000-of-00001.parquet` | 10,042 | MIT (card text, "Licensing Information"; not in the card metadata) | 2026-10-14 |
+| ARC-Easy | `allenai/ai2_arc` | `210d026faf9955653af8916fad021475a3f00453` | `ARC-Easy/test-00000-of-00001.parquet` | 2,376 | CC-BY-SA-4.0 (card metadata) | 2026-10-14 |
+| PIQA | `ybisk/piqa`, HF parquet conversion `refs/convert/parquet` | `142c51238b3ca2bc61e9a075913871b8b600e8e1` | `plain_text/validation/0000.parquet` | 1,838 | unknown (card metadata "unknown"; the card's licensing section is empty) | 2026-10-14 |
+| LAMBADA (OpenAI version) | `EleutherAI/lambada_openai` | `900124bf3b8235c6daf21033af9948b3f07346c4` | `default/test/default.parquet` | 5,153 | MIT (card metadata) | 2026-10-14 |
+
+PIQA's main branch holds only a loading script that downloads from an external site; the HF parquet
+conversion was used instead so that no repository code is executed. The benchmarks are used only for
+evaluation and the contamination check below; they are not redistributed.
+
 ## License obligations
 - **FineWeb-Edu (ODC-By v1.0):** attribution is required. The model card and README must credit
   FineWeb-Edu (Hugging Face) with a link to the dataset and to the license, and note that the data comes
@@ -66,4 +83,4 @@ Tokens include one EOS per document. Raw UTF-8 bytes were not measured by the bu
 |---|---|---|---|
 | Train/val doc overlap | SHA-256 of each document's token ids in the train and val shards (equivalent to the text, since the tokenizer round-trips exactly); intersection must be empty | TinyStories: 0 of 1,805,471 train / 9,122 val; FineWeb-Edu: 0 of 2,334,471 train / 11,513 val | EXP-004, [`shards-tinystories-check-2026-10-12.txt`](../experiments/shards-tinystories-check-2026-10-12.txt); EXP-005, [`shards-fineweb-edu-check-2026-10-12.txt`](../experiments/shards-fineweb-edu-check-2026-10-12.txt) |
 | Tokenizer trained on train only | `train_tokenizer.py` skips every document that `assign_split` puts in val, using the same `normalize_text`, `document_hash`, salt `syrinx-split-v1` and `val_fraction` 0.005 as the Phase 2 shards (`test_selection.py::test_matches_tokenizer_script_selection` pins this). The split depends only on the document hash, so the 200-character filter cannot move a document across splits | FineWeb-Edu: 1,553 val documents skipped, 316,160 train documents used; no Phase 2 val document can be among them. TinyStories: not used for tokenizer training. This holds by construction: no check compared the tokenizer's input with the val shards directly | EXP-002, [`tokenizer-train-2026-10-11.txt`](../experiments/tokenizer-train-2026-10-11.txt) |
-| Benchmark contamination (Phase 8) | 13-gram overlap between benchmark test sets and train shards | | |
+| Benchmark contamination (Phase 8) | Word 13-grams (NFKC, lowercase, alphanumeric runs) of every benchmark example vs every train document of TinyStories and FineWeb-Edu; hash hits confirmed word by word; examples under 13 words reported as unchecked | HellaSwag 40 / 10,042 (0.40%); ARC-Easy 22 / 2,300 checked (0.96%, 76 unchecked); PIQA 3 / 1,685 checked (0.18%, 153 unchecked); LAMBADA 0 / 5,153. Matches are mostly common phrases; an upper bound on leakage, not confirmed leaks. Scores are reported on all and on clean examples | EXP-016, [`contamination-2026-10-14.json`](../experiments/contamination-2026-10-14.json) |

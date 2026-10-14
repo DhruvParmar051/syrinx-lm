@@ -540,3 +540,46 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   expected: both sides run the same fp32 operations in the same order on the CPU.
 - Caveats: parity uses random ids, not natural text; one checkpoint (10m). The 50M and 125M exports need
   their own parity runs. Generation was checked on one prompt and one seed.
+
+## EXP-016 — Benchmark contamination: 13-gram overlap with all training shards (Phase 8)
+- Date: 2026-10-14
+- Git SHA: c0e8045 (clean for tracked files)
+- Benchmarks: HellaSwag validation, ARC-Easy test, PIQA validation, LAMBADA (OpenAI) test, fetched at pinned
+  revisions (docs/data.md, "Evaluation benchmarks"; [`benchmarks-fetch-2026-10-14.txt`](benchmarks-fetch-2026-10-14.txt))
+- Training text scanned: every train shard any model used: TinyStories train (5 shards) and FineWeb-Edu
+  train (26 shards); the tokenizer's training text is a subset of the FineWeb-Edu train split
+- Command: `uv run python scripts/check_contamination.py --benchmark hellaswag=... --benchmark arc_easy=...
+  --benchmark piqa=... --benchmark lambada=... --workers 16 --out experiments/contamination-2026-10-14.json`
+- Method: word 13-grams after NFKC + lowercase + alphanumeric-run splitting; an example is contaminated if
+  any of its 13-grams occurs inside one training document (hash candidates confirmed word by word);
+  examples with fewer than 13 words are "unchecked". Text checked per example: HellaSwag context + all
+  endings, ARC question + all choices, PIQA goal + both solutions, LAMBADA passage.
+- Raw output: [`contamination-2026-10-14.json`](contamination-2026-10-14.json) (all contaminated ids, first
+  5 matched n-grams per benchmark, per-shard timings), [`contamination-2026-10-14.txt`](contamination-2026-10-14.txt)
+- Hardware state: battery power (72% at start), CPU only (16 worker processes)
+- Scale: 4,139,942 documents, 2,154,745,552 words, 1,665,559 distinct benchmark 13-grams (index built from
+  19,409 examples, 229 of them unchecked).
+- Metrics (source: the JSON file):
+
+  | benchmark | examples | unchecked | checked | contaminated | % of checked |
+  |---|---|---|---|---|---|
+  | HellaSwag | 10,042 | 0 | 10,042 | 40 | 0.40 |
+  | ARC-Easy | 2,376 | 76 | 2,300 | 22 | 0.96 |
+  | PIQA | 1,838 | 153 | 1,685 | 3 | 0.18 |
+  | LAMBADA | 5,153 | 0 | 5,153 | 0 | 0.00 |
+
+- Time: 368 s wall (`/usr/bin/time`), against an estimate of 3-5 min made from one shard scanned alone
+  (51.6 s); with 16 workers in parallel a full FineWeb-Edu shard took up to 180 s (the small last shard
+  1.2 s) and the four large TinyStories shards 195-197 s each, so per-shard throughput was about 3.5x lower
+  than the single-shard estimate (battery power, 16 concurrent workers).
+- Observations: most matched n-grams in the report are common phrases or facts that also occur in
+  ordinary web text (e.g. "the most common eating disorders are anorexia nervosa bulimia nervosa and binge
+  eating", the "20 20 20" eye-strain rule); some ARC-Easy matches contain question wording ("which of the
+  following elements is best able to combine with itself and"), consistent with quiz pages in FineWeb-Edu.
+  A flagged example therefore shares 13 words with training text; it is an upper bound on leakage, not a
+  confirmed leak. Benchmark scores will be reported on all examples and on the clean subset.
+- Process note: a first attempt on the same day used `np.isin` against the index, which re-sorts the
+  1.67M-entry index per document (measured 861 ms per document, about 60 h projected); it was stopped
+  after 31 min with no output and replaced by a binary search (commit c9955fe, 0.024 ms per document).
+- Caveats: exact 13-gram overlap after normalization misses paraphrases and shorter overlaps; unchecked
+  examples (229) are not known to be clean; only the matched n-grams listed in the JSON were inspected by eye.

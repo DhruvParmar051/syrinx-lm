@@ -1,0 +1,36 @@
+# 2026-10-14 12:51:15 | git 214b343 | Now drawing from 'Battery Power'
+# helper script (one-off, not in the repo):
+#   """One-off: fetch the four benchmark files at pinned revisions and export JSONL rows."""
+#   import hashlib, json, sys
+#   from pathlib import Path
+#   import pyarrow.parquet as pq
+#   from huggingface_hub import hf_hub_download
+#   
+#   OUT = Path(sys.argv[1])
+#   SPECS = [
+#       ("hellaswag", "Rowan/hellaswag", "218ec52e09a7e7462a5400043bb9a69a41d06b76", "data/validation-00000-of-00001.parquet"),
+#       ("arc_easy", "allenai/ai2_arc", "210d026faf9955653af8916fad021475a3f00453", "ARC-Easy/test-00000-of-00001.parquet"),
+#       ("piqa", "ybisk/piqa", "142c51238b3ca2bc61e9a075913871b8b600e8e1", "plain_text/validation/0000.parquet"),
+#       ("lambada", "EleutherAI/lambada_openai", "900124bf3b8235c6daf21033af9948b3f07346c4", "default/test/default.parquet"),
+#   ]
+#   OUT.mkdir(parents=True, exist_ok=True)
+#   summary = []
+#   for name, repo, rev, filename in SPECS:
+#       path = Path(hf_hub_download(repo, filename, repo_type="dataset", revision=rev))
+#       sha = hashlib.sha256(path.read_bytes()).hexdigest()
+#       table = pq.read_table(path)
+#       rows = table.to_pylist()
+#       out = OUT / f"{name}.jsonl"
+#       with out.open("x", encoding="utf-8") as fh:
+#           for row in rows:
+#               fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+#       summary.append({"benchmark": name, "repo": repo, "revision": rev, "file": filename, "bytes": path.stat().st_size,
+#                       "sha256": sha, "rows": len(rows), "columns": table.column_names, "jsonl": str(out)})
+#       print(json.dumps(summary[-1]))
+#   (OUT / "sources.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+# command: uv run python -I <helper> data_cache/benchmarks
+{"benchmark": "hellaswag", "repo": "Rowan/hellaswag", "revision": "218ec52e09a7e7462a5400043bb9a69a41d06b76", "file": "data/validation-00000-of-00001.parquet", "bytes": 6315951, "sha256": "899813071e1e95efafec90f856e1987d2150fa4d020fc005df6962c259f660cd", "rows": 10042, "columns": ["ind", "activity_label", "ctx_a", "ctx_b", "ctx", "endings", "source_id", "split", "split_type", "label"], "jsonl": "data_cache/benchmarks/hellaswag.jsonl"}
+{"benchmark": "arc_easy", "repo": "allenai/ai2_arc", "revision": "210d026faf9955653af8916fad021475a3f00453", "file": "ARC-Easy/test-00000-of-00001.parquet", "bytes": 346257, "sha256": "4160597d618ae851c7eb04e281574f3f654776216ac6b6641588d64527b47177", "rows": 2376, "columns": ["id", "question", "choices", "answerKey"], "jsonl": "data_cache/benchmarks/arc_easy.jsonl"}
+{"benchmark": "piqa", "repo": "ybisk/piqa", "revision": "142c51238b3ca2bc61e9a075913871b8b600e8e1", "file": "plain_text/validation/0000.parquet", "bytes": 301200, "sha256": "40e1677bba609c8801deacc171d76f3e24c083f365c95a1cbda7520c923dfea2", "rows": 1838, "columns": ["goal", "sol1", "sol2", "label"], "jsonl": "data_cache/benchmarks/piqa.jsonl"}
+{"benchmark": "lambada", "repo": "EleutherAI/lambada_openai", "revision": "900124bf3b8235c6daf21033af9948b3f07346c4", "file": "default/test/default.parquet", "bytes": 1157764, "sha256": "99d8a9e54cda761c6340ddd4fa6feda7f846ffb0e716afa52968dea75495eea7", "rows": 5153, "columns": ["text"], "jsonl": "data_cache/benchmarks/lambada.jsonl"}
+exit 
