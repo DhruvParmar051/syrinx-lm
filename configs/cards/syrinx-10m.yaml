@@ -1,0 +1,33 @@
+# Model card manifest for syrinx-10m (scripts/make_model_card.py). Every number in the card is read
+# from the evidence files below; this file holds only paths and descriptive text.
+name: syrinx-10m
+repo_id: DhruvParmar051/syrinx-10m   # Hub repo for the usage snippet; set at release
+export_dir: exports/syrinx-10m
+train_config: configs/syrinx-10m.yaml
+train_log: experiments/10m-a-train-2026-10-12.txt
+eval: experiments/eval-10m-a-step9000-bf16-autocast-2026-10-13.json
+parity: experiments/export-10m-a-step9000-parity-2026-10-13.json
+contamination: experiments/contamination-2026-10-14.json
+benchmarks: experiments/benchmarks-10m-a-2026-10-14.json
+benchmark_dir: data_cache/benchmarks
+experiments:
+  training: EXP-012
+  eval: EXP-014
+  parity: EXP-015
+  contamination: EXP-016
+  benchmarks: EXP-017
+datasets: [tinystories]
+hardware: Apple M5 Pro laptop (20-core GPU, 48 GB unified memory), PyTorch MPS backend
+summary: >-
+  The smallest Syrinx model: a decoder-only transformer trained from scratch on TinyStories, a corpus
+  of short synthetic children's stories. It is the first rung of a 10M / 50M / 125M scaling ladder and
+  exists to validate the training, evaluation and export pipeline end to end.
+intended_use: >-
+  Generating short, simple children's stories, and studying a small language model trained end to end on
+  one laptop. It is a base model: it continues text and does not follow instructions.
+limitations:
+  - Trained only on TinyStories, so it knows almost nothing outside simple children's stories; it does not
+    answer questions or state facts reliably.
+  - Base model, not instruction-tuned or safety-tuned; outputs can be incoherent, repetitive or wrong.
+  - Greedy decoding tends to loop; sampling with the shipped generation settings works better.
+  - Benchmark scores are close to chance and are reported for completeness, not as evidence of capability.
