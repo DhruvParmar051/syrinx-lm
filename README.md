@@ -5,6 +5,14 @@ causal multi-head attention, tied embeddings, a 32K byte-level BPE tokenizer, an
 It is scaled 10M → 50M → 125M parameters on a single laptop (Apple M5 Pro, PyTorch MPS) and
 released as a checkpoint that loads with `LlamaForCausalLM`, no custom code needed.
 
+![The three Syrinx sizes as 3D towers: 10M with 4 blocks, 50M with 10, 125M with 12](docs/figures/architecture-three-sizes.png)
+
+Each block is RMSNorm → causal attention with RoPE (one fin per 64-wide head) → RMSNorm → SwiGLU,
+added back into the residual stream; the LM head shares its weights with the embedding.
+[`docs/architecture/syrinx-3d.html`](docs/architecture/syrinx-3d.html) is an interactive version
+(open it in a browser: rotate, switch sizes, hover a part for its shape and parameter count), and
+[`architecture-125m.gif`](docs/figures/architecture-125m.gif) is a turntable of the 125M model.
+
 ## Status
 
 | Model | Data | Status |

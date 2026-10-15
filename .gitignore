@@ -24,3 +24,6 @@ tokenizer/artifacts/
 
 # Secrets
 .env
+
+# Large renders (shared outside git)
+docs/architecture/*.mp4

@@ -1,0 +1,676 @@
+<title>Syrinx Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<style>
+/* Layout: a full-height 3D stage with a spec sheet docked on the left; one dark, lab-bench look. */
+:root {
+  --bg: #0e161a;
+  --panel: #131e23;
+  --line: #24343b;
+  --text: #e7ece9;
+  --muted: #8ea1a3;
+  --c-emb: #9cc5a1;
+  --c-norm: #e8d5a8;
+  --c-attn: #f08a6c;
+  --c-rope: #ffc56e;
+  --c-gate: #b9a3f5;
+  --c-up: #7fb8e6;
+  --c-resid: #f3efe4;
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --f-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--f-body); font-size: 14px; overflow: hidden; }
+#app { display: grid; grid-template-columns: 340px minmax(0, 1fr); height: 100%; }
+#panel { background: var(--panel); border-right: 1px solid var(--line); overflow-y: auto; padding-block: 24px; padding-inline: 22px; display: flex; flex-direction: column; gap: 20px; }
+#stage { position: relative; min-width: 0; overflow: hidden; }
+#stage canvas { display: block; }
+#labels { position: absolute; inset: 0; pointer-events: none; }
+
+.eyebrow { font: 500 11px/1.3 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 700 34px/1.05 var(--f-display); letter-spacing: -.01em; margin: 6px 0 0; text-wrap: balance; }
+.lede { color: var(--muted); line-height: 1.5; margin: 8px 0 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; font: 500 12px/1.6 var(--f-mono); color: var(--text); text-decoration: none; }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.chip[data-kind="done"]::before { background: var(--c-emb); }
+.chip[data-kind="live"]::before { background: var(--c-rope); animation: pulse 1.6s ease-in-out infinite; }
+a.chip:hover { border-color: var(--c-emb); }
+@keyframes pulse { 50% { opacity: .3; } }
+
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { font: 500 13px var(--f-mono); color: var(--muted); background: transparent; border: 0; padding: 9px 0; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+.seg button:focus-visible, .toggles button:focus-visible { outline: 2px solid var(--c-rope); outline-offset: -2px; }
+
+dl.stats { display: grid; grid-template-columns: auto 1fr; gap: 7px 14px; margin: 0; }
+dl.stats dt { color: var(--muted); }
+dl.stats dd { margin: 0; text-align: right; font: 400 13px var(--f-mono); font-variant-numeric: tabular-nums; }
+
+.split { display: flex; height: 10px; border-radius: 3px; overflow: hidden; margin-top: 10px; background: var(--line); }
+.split span { display: block; height: 100%; }
+.split-key { display: grid; grid-template-columns: 10px 1fr auto; gap: 6px 8px; align-items: center; margin-top: 10px; font-size: 13px; }
+.split-key i, .legend i { width: 10px; height: 10px; border-radius: 2px; display: block; }
+.split-key b { font: 400 12px var(--f-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+
+.legend { display: grid; grid-template-columns: 10px 1fr; gap: 7px 9px; align-items: center; font-size: 13px; }
+.legend span { color: var(--muted); }
+.legend strong { color: var(--text); font-weight: 500; }
+
+.toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+.toggles button { font: 500 12px var(--f-mono); color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+.toggles button[aria-pressed="true"] { color: var(--text); border-color: var(--muted); }
+.hint { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
+section h2 { font: 500 11px/1.3 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+
+.lbl > span { display: inline-block; font: 500 12px/1.25 var(--f-body); color: var(--text); white-space: nowrap; transform: translateX(50%); padding-left: 6px; }
+.lbl small { display: block; font: 400 11px var(--f-mono); color: var(--muted); }
+.lbl.left > span { transform: translateX(-50%); padding-left: 0; padding-right: 8px; text-align: right; }
+.lbl.center > span { transform: none; padding: 0; text-align: center; }
+.lbl.big > span { font: 700 15px var(--f-display); }
+
+#tip { position: absolute; z-index: 5; pointer-events: none; background: rgba(14, 22, 26, .94); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; max-width: 260px; }
+#tip strong { display: block; font: 700 14px var(--f-display); }
+#tip span { display: block; font: 400 12px/1.45 var(--f-mono); color: var(--muted); margin-top: 3px; }
+
+/* Clean mode: a framed still for posts and READMEs, with no controls. */
+#poster { display: none; }
+.clean #app { grid-template-columns: 1fr; }
+.clean #panel { display: none; }
+.clean #poster { display: block; position: absolute; inset: 0; pointer-events: none; padding: 5.5vmin; }
+#poster .p-title { font: 700 9vmin/1 var(--f-display); letter-spacing: -.02em; margin-top: 1.2vmin; }
+#poster .p-sub { font: 400 2.1vmin/1.5 var(--f-mono); color: var(--muted); margin-top: 1.6vmin; }
+#poster .p-foot { position: absolute; left: 5.5vmin; right: 5.5vmin; bottom: 5vmin; display: flex; flex-wrap: wrap; gap: 1.2vmin 2.6vmin; font: 400 1.9vmin var(--f-mono); color: var(--muted); }
+#poster .p-foot span { display: inline-flex; align-items: center; gap: 1vmin; }
+#poster .p-foot i { width: 1.6vmin; height: 1.6vmin; border-radius: .3vmin; display: block; }
+#poster .eyebrow { font-size: 1.9vmin; }
+.clean .lbl > span { font-size: 1.8vmin; }
+.clean .lbl small { font-size: 1.5vmin; }
+.clean .lbl.big > span { font-size: 2.3vmin; }
+
+@media (max-width: 760px) {
+  body { overflow: auto; }
+  #app { grid-template-columns: minmax(0, 1fr); grid-template-rows: 62vh auto; height: auto; }
+  #stage { order: -1; height: 62vh; }
+  #panel { border-right: 0; border-top: 1px solid var(--line); padding-inline: 16px; }
+  .lbl small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .chip[data-kind="live"]::before { animation: none; } }
+</style>
+
+<div id="app">
+  <aside id="panel">
+    <div>
+      <div class="eyebrow">Syrinx LM · decoder-only transformer</div>
+      <h1 id="m-name">syrinx-125m</h1>
+      <p class="lede">A GPT-style language model written from scratch in PyTorch and trained on a single local device. Three sizes share one architecture.</p>
+      <span class="chip" id="m-status" data-kind="next">Next</span>
+    </div>
+
+    <div class="seg" role="group" aria-label="Model size">
+      <button type="button" id="b-10m" data-m="10m" aria-pressed="false">10M</button>
+      <button type="button" id="b-50m" data-m="50m" aria-pressed="false">50M</button>
+      <button type="button" id="b-125m" data-m="125m" aria-pressed="true">125M</button>
+      <button type="button" id="b-all" data-m="all" aria-pressed="false">All</button>
+    </div>
+
+    <section>
+      <h2>Shape</h2>
+      <dl class="stats" id="m-stats"></dl>
+    </section>
+
+    <section>
+      <h2 id="split-h">Where the parameters live</h2>
+      <div class="split" id="m-split"></div>
+      <div class="split-key" id="m-splitkey"></div>
+    </section>
+
+    <section>
+      <h2>Inside each block</h2>
+      <div class="legend">
+        <i style="background:var(--c-norm)"></i><span><strong>RMSNorm</strong> before each sublayer</span>
+        <i style="background:var(--c-attn)"></i><span><strong>Causal attention</strong>, one fin per head</span>
+        <i style="background:var(--c-rope)"></i><span><strong>RoPE</strong> rotates queries and keys</span>
+        <i style="background:var(--c-gate)"></i><span><strong>SwiGLU gate</strong> (SiLU)</span>
+        <i style="background:var(--c-up)"></i><span><strong>SwiGLU up / down</strong> projections</span>
+        <i style="background:var(--c-resid)"></i><span><strong>Residual stream</strong> carries the sum</span>
+        <i style="background:var(--c-emb)"></i><span><strong>Embedding</strong>, shared with the LM head</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>View</h2>
+      <div class="toggles">
+        <button type="button" id="t-explode" aria-pressed="false">Explode</button>
+        <button type="button" id="t-labels" aria-pressed="true">Labels</button>
+        <button type="button" id="t-rotate" aria-pressed="true">Rotate</button>
+        <button type="button" id="t-flow" aria-pressed="true">Data flow</button>
+      </div>
+      <p class="hint" style="margin-top:10px">Drag to orbit, scroll to zoom, hover a part for its shape and parameter count. Fin width is fixed because every head is 64 wide in all three models. The bars on top are illustrative.</p>
+    </section>
+  </aside>
+
+  <div id="stage">
+    <div id="labels"></div>
+    <div id="poster">
+      <div class="eyebrow">Syrinx LM · built from scratch</div>
+      <div class="p-title" id="p-title">syrinx-125m</div>
+      <div class="p-sub" id="p-sub"></div>
+      <div class="p-foot">
+        <span><i style="background:var(--c-emb)"></i>tied embedding</span>
+        <span><i style="background:var(--c-norm)"></i>RMSNorm</span>
+        <span><i style="background:var(--c-attn)"></i>causal attention</span>
+        <span><i style="background:var(--c-rope)"></i>RoPE</span>
+        <span><i style="background:var(--c-gate)"></i>SwiGLU gate</span>
+        <span><i style="background:var(--c-up)"></i>SwiGLU up/down</span>
+        <span><i style="background:var(--c-resid)"></i>residual stream</span>
+      </div>
+    </div>
+    <div id="tip" hidden></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+<script>
+(function () {
+  // Shapes from configs/syrinx-{10m,50m,125m}.yaml. Totals are computed, not typed in.
+  const V = 32768, CTX = 1024;
+  const MODELS = {
+    "10m":  { name: "syrinx-10m",  d: 256, L: 4,  H: 4,  ff: 768,  data: "TinyStories, ~0.3B tokens",
+              status: "Released on Hugging Face", kind: "done", href: "https://huggingface.co/DhruvParmar051/syrinx-10m" },
+    "50m":  { name: "syrinx-50m",  d: 512, L: 10, H: 8,  ff: 1536, data: "FineWeb-Edu, 1.0B tokens",
+              status: "In training", kind: "live" },
+    "125m": { name: "syrinx-125m", d: 768, L: 12, H: 12, ff: 2560, data: "FineWeb-Edu, 2.5B tokens",
+              status: "Up next", kind: "next" }
+  };
+  const KEYS = ["10m", "50m", "125m"];
+  const C = {
+    emb: 0x9cc5a1, norm: 0xe8d5a8, attn: 0xf08a6c, rope: 0xffc56e, gate: 0xb9a3f5,
+    up: 0x7fb8e6, down: 0x5c97cf, resid: 0xf3efe4, tok: 0xc6d2ce, edge: 0x0e161a, bg: 0x0e161a, grid: 0x24343b, lead: 0x8ea1a3
+  };
+  const fmt = n => n.toLocaleString("en-US");
+  const millions = n => (n / 1e6).toFixed(1) + "M";
+  function counts(m) {
+    const emb = V * m.d, attn = 4 * m.d * m.d, mlp = 3 * m.d * m.ff, norms = 2 * m.d;
+    return { emb, attn, mlp, norms, total: emb + m.L * (attn + mlp + norms) + m.d };
+  }
+
+  const hash = (location.hash || "").slice(1).toLowerCase();
+  const CLEAN = hash.includes("clean"), CAPTURE = hash.includes("capture");
+  if (CLEAN) document.documentElement.classList.add("clean");
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let current = hash.includes("all") ? "all" : hash.includes("125") ? "125m" : hash.includes("50") ? "50m" : hash.includes("10") ? "10m" : "125m";
+  let exploded = false, labelsOn = true, rotateOn = !reduceMotion && !CAPTURE, flowOn = true;
+
+  // --- renderer, scene, camera -------------------------------------------------------------
+  const stage = document.getElementById("stage");
+  const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(C.bg, 1);
+  stage.prepend(renderer.domElement);
+  const labelRenderer = new THREE.CSS2DRenderer();
+  labelRenderer.domElement.id = "labels";
+  document.getElementById("labels").replaceWith(labelRenderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 500);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.autoRotateSpeed = 0.9;
+  controls.minDistance = 4;
+  controls.maxDistance = 180;
+
+  scene.add(new THREE.HemisphereLight(0xe4efe9, 0x0e161a, 0.55));
+  const key = new THREE.DirectionalLight(0xffffff, 0.75); key.position.set(8, 18, 14); scene.add(key);
+  const rim = new THREE.DirectionalLight(0xffd7b0, 0.35); rim.position.set(-12, 6, -10); scene.add(rim);
+  const grid = new THREE.GridHelper(80, 80, C.grid, C.grid);
+  grid.material.transparent = true; grid.material.opacity = 0.45; scene.add(grid);
+
+  // --- builders ----------------------------------------------------------------------------
+  let root = null, pickables = [], labelObjs = [], stages = [], flows = [], buildT0 = 0, animating = false;
+
+  function mat(color, opacity) {
+    return new THREE.MeshStandardMaterial({
+      color, roughness: 0.6, metalness: 0.05, emissive: color, emissiveIntensity: 0.07,
+      transparent: opacity < 1, opacity: opacity, depthWrite: opacity >= 1
+    });
+  }
+  function box(w, h, d, color, info, opacity = 1) {
+    const g = new THREE.BoxGeometry(w, h, d);
+    const mesh = new THREE.Mesh(g, mat(color, opacity));
+    if (opacity >= 1) {
+      mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(g),
+        new THREE.LineBasicMaterial({ color: C.edge, transparent: true, opacity: 0.6 })));
+    }
+    if (info) { mesh.userData.info = info; pickables.push(mesh); }
+    return mesh;
+  }
+  function line(points, color, opacity = 0.7, dashed = false) {
+    const g = new THREE.BufferGeometry().setFromPoints(points.map(p => new THREE.Vector3(...p)));
+    const m = dashed
+      ? new THREE.LineDashedMaterial({ color, dashSize: 0.18, gapSize: 0.12, transparent: true, opacity })
+      : new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+    const l = new THREE.Line(g, m);
+    if (dashed) l.computeLineDistances();
+    return l;
+  }
+  function label(parent, pos, title, sub, cls = "") {
+    const el = document.createElement("div");
+    el.className = "lbl " + cls;
+    el.innerHTML = "<span>" + title + (sub ? "<small>" + sub + "</small>" : "") + "</span>";
+    const o = new THREE.CSS2DObject(el);
+    o.position.set(...pos);
+    parent.add(o);
+    labelObjs.push(o);
+    return o;
+  }
+  // Callouts on the right, spread to a fixed spacing so they never stack, each with a leader line.
+  function callouts(parent, x0, items, spacing, startY, dir) {
+    let y = startY;
+    const placed = [];
+    for (const it of (dir > 0 ? items : items.slice().reverse())) {
+      const ly = dir > 0 ? Math.max(y, it.y) : Math.min(y, it.y);
+      placed.push({ ...it, ly });
+      y = ly + dir * spacing;
+    }
+    for (const p of placed) {
+      parent.add(line([[p.x, p.y, 0], [x0 - 0.25, p.ly, 0], [x0, p.ly, 0]], C.lead, 0.55));
+      label(parent, [x0, p.ly, 0], p.title, p.sub);
+    }
+  }
+
+  function width(d) { return 1.6 + (d / 768) * 3.2; }
+
+  // One tower. Returns its group; `detail` adds callouts, false keeps only a name plate.
+  function buildTower(keyName, detail) {
+    const m = MODELS[keyName], c = counts(m), w = width(m.d), e = exploded ? 1.9 : 1;
+    const span = w * (0.5 + (m.ff / m.d) * 0.35);           // SwiGLU expansion footprint
+    const depth = w * 0.8;
+    const tubeX = -(span / 2 + 0.55);
+    const T = new THREE.Group();
+    const marks = {};
+    let y = 0;
+    function stageGroup(y0) { const g = new THREE.Group(); g.position.y = y0; T.add(g); stages.push(g); return g; }
+
+    const gTok = stageGroup(0);
+    for (let i = 0; i < 8; i++) {
+      const t = box(0.3, 0.3, 0.3, C.tok, ["Input tokens", "B × T token ids, T ≤ " + fmt(CTX), "32K byte-level BPE vocabulary"]);
+      t.position.set((i - 3.5) * 0.44, 0.15, w * 0.45);
+      gTok.add(t);
+    }
+    marks.tok = { x: 1.7, y: 0.15 };
+    y = 0.3 + 0.45 * e;
+
+    const gEmb = stageGroup(y);
+    const emb = box(w, 0.34, w * 1.5, C.emb, ["Token embedding", fmt(V) + " × " + m.d, fmt(c.emb) + " params (shared with LM head)"]);
+    emb.position.y = 0.17; gEmb.add(emb);
+    marks.emb = { x: w / 2, y: y + 0.17 };
+    const embTop = y + 0.34;
+    y = embTop + 0.5 * e;
+
+    const gi = 0.14 * e, gb = 0.42 * e;
+    const blocksStart = y;
+    const addNodes = [];
+    for (let b = 0; b < m.L; b++) {
+      const g = stageGroup(y);
+      let by = 0;
+      const n1 = box(w, 0.07, depth, C.norm, ["RMSNorm (pre-attention)", "weight: " + m.d, fmt(m.d) + " params"]);
+      n1.position.y = by + 0.035; g.add(n1);
+      g.add(line([[tubeX, by + 0.035, 0], [-w / 2, by + 0.035, 0]], C.resid, 0.45));
+      if (b === 0) marks.norm = { x: w / 2, y: y + by + 0.035 };
+      by += 0.07 + gi;
+
+      const attnH = 0.9;
+      const housing = box(w * 0.98, attnH + 0.04, depth + 0.06, C.attn, null, 0.1);
+      housing.position.y = by + attnH / 2; g.add(housing);
+      const pitch = Math.min((w * 0.92) / m.H, 0.42);
+      for (let h = 0; h < m.H; h++) {
+        const fin = box(0.24, attnH, depth * 0.9, C.attn, [
+          "Attention head " + (h + 1) + " of " + m.H,
+          "head dim 64, causal mask",
+          "per block: Wq, Wk, Wv, Wo = 4 × " + m.d + "² = " + fmt(c.attn) + " params"
+        ]);
+        fin.position.set((h - (m.H - 1) / 2) * pitch, by + attnH / 2, 0);
+        g.add(fin);
+      }
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(w * 0.66, 0.035, 10, 72), mat(C.rope, 1));
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = by + attnH * 0.62;
+      ring.userData.info = ["RoPE", "rotate_half (HF Llama convention), θ = 10,000", "applied to queries and keys, 0 params"];
+      pickables.push(ring); g.add(ring);
+      if (b === 0) marks.attn = { x: w * 0.66, y: y + by + attnH * 0.62 };
+      const attnTop = by + attnH;
+      g.add(line([[-w / 2, attnTop, 0], [tubeX, attnTop, 0]], C.resid, 0.45));
+      addNodes.push(y + attnTop);
+      by = attnTop + gi;
+
+      const n2 = box(w, 0.07, depth, C.norm, ["RMSNorm (pre-MLP)", "weight: " + m.d, fmt(m.d) + " params"]);
+      n2.position.y = by + 0.035; g.add(n2);
+      g.add(line([[tubeX, by + 0.035, 0], [-w / 2, by + 0.035, 0]], C.resid, 0.45));
+      by += 0.07 + gi;
+
+      const half = (span - 0.08) / 2;
+      const gate = box(half, 0.3, depth, C.gate, ["SwiGLU gate", m.d + " → " + fmt(m.ff) + ", SiLU", fmt(m.d * m.ff) + " params"]);
+      gate.position.set(-(half / 2 + 0.04), by + 0.15, 0); g.add(gate);
+      const up = box(half, 0.3, depth, C.up, ["SwiGLU up", m.d + " → " + fmt(m.ff), fmt(m.d * m.ff) + " params"]);
+      up.position.set(half / 2 + 0.04, by + 0.15, 0); g.add(up);
+      if (b === 0) marks.mlp = { x: span / 2, y: y + by + 0.15 };
+      by += 0.3 + gi * 0.6;
+      const down = box(w * 0.9, 0.2, depth, C.down, ["SwiGLU down", fmt(m.ff) + " → " + m.d + ", applied to SiLU(gate) ⊙ up", fmt(m.d * m.ff) + " params"]);
+      down.position.y = by + 0.1; g.add(down);
+      const mlpTop = by + 0.2;
+      g.add(line([[-w * 0.45, mlpTop, 0], [tubeX, mlpTop, 0]], C.resid, 0.45));
+      addNodes.push(y + mlpTop);
+      by = mlpTop;
+      y += by + (b < m.L - 1 ? gb : 0);
+    }
+    const blocksEnd = y;
+    y += 0.5 * e;
+
+    const gHead = stageGroup(y);
+    const fn = box(w, 0.07, depth, C.norm, ["Final RMSNorm", "weight: " + m.d, fmt(m.d) + " params"]);
+    fn.position.y = 0.035; gHead.add(fn);
+    gHead.add(line([[tubeX, 0.035, 0], [-w / 2, 0.035, 0]], C.resid, 0.45));
+    marks.fnorm = { x: w / 2, y: y + 0.035 };
+    const headY = 0.07 + 0.42 * e;
+    const head = box(w, 0.34, w * 1.5, C.emb, ["LM head", m.d + " → " + fmt(V) + " logits", "tied to the embedding: 0 extra params"]);
+    head.position.y = headY + 0.17; gHead.add(head);
+    marks.head = { x: w / 2, y: y + headY + 0.17 };
+    const headTop = y + headY + 0.34;
+
+    const gOut = stageGroup(headTop + 0.12);
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const nBars = 28;
+    let maxH = 0;
+    for (let i = 0; i < nBars; i++) {
+      const h = 0.08 + 1.5 * Math.exp(-((i - 17) ** 2) / 2.2) + 0.45 * Math.exp(-((i - 9) ** 2) / 4) * rnd() + 0.12 * rnd();
+      maxH = Math.max(maxH, h);
+      const bar = box(0.1, h, 0.1, C.emb, ["Next-token distribution", "softmax over " + fmt(V) + " tokens", "bar heights are illustrative"]);
+      bar.position.set((i - (nBars - 1) / 2) * ((w * 0.9) / nBars), h / 2, 0);
+      gOut.add(bar);
+    }
+    marks.out = { x: w * 0.45, y: headTop + 0.12 + maxH * 0.5 };
+
+    // residual stream
+    const tubeH = y + 0.035 - embTop;
+    const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, tubeH, 16), mat(C.resid, 0.35));
+    tube.position.set(tubeX, embTop + tubeH / 2, 0);
+    tube.userData.info = ["Residual stream", "B × T × " + m.d, "each sublayer adds its output back in"];
+    pickables.push(tube); T.add(tube);
+    T.add(line([[-w / 2, embTop - 0.17, 0], [tubeX, embTop - 0.17, 0], [tubeX, embTop, 0]], C.resid, 0.45));
+    for (const ay of addNodes) {
+      const n = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), mat(C.resid, 1));
+      n.position.set(tubeX, ay, 0);
+      n.userData.info = ["Residual add", "x = x + sublayer(norm(x))", "0 params"];
+      pickables.push(n); T.add(n);
+    }
+
+    // "× L" bracket
+    const bx = tubeX - 0.45;
+    T.add(line([[bx + 0.15, blocksStart, 0], [bx, blocksStart, 0], [bx, blocksEnd, 0], [bx + 0.15, blocksEnd, 0]], C.resid, 0.6));
+
+    // tied weights: dashed line from the embedding to the LM head on the back right
+    const tx = span / 2 + 0.15, tz = -w * 0.75 + 0.05;
+    T.add(line([[w / 2 - 0.05, embTop - 0.17, tz], [tx, embTop - 0.17, tz], [tx, headTop - 0.17, tz], [w / 2 - 0.05, headTop - 0.17, tz]], C.emb, 0.8, true));
+
+    // particles flowing up the residual stream
+    const nP = 46;
+    const pts = new THREE.Points(new THREE.BufferGeometry(),
+      new THREE.PointsMaterial({ color: C.rope, size: 0.13, transparent: true, opacity: 0.9, depthWrite: false }));
+    pts.geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(nP * 3), 3));
+    pts.userData = { n: nP, y0: embTop, y1: embTop + tubeH, x: tubeX };
+    pts.visible = flowOn;
+    T.add(pts); flows.push(pts);
+
+    if (detail) {
+      label(T, [bx - 0.15, (blocksStart + blocksEnd) / 2, 0], "× " + m.L + " decoder blocks", "", "left big");
+      label(T, [tubeX - 0.3, embTop + 0.5, 0], "Residual stream", m.d + " wide", "left");
+      const cx = span / 2 + 1.1, sp = CLEAN ? 2.0 : 1.3;
+      callouts(T, cx, [
+        { ...marks.tok, title: "Token ids", sub: "context " + fmt(CTX) },
+        { ...marks.emb, title: "Embedding", sub: fmt(V) + " × " + m.d },
+        { ...marks.norm, title: "RMSNorm", sub: "pre-norm, eps 1e-5" },
+        { ...marks.attn, title: "Causal self-attention", sub: m.H + " heads × 64, RoPE" },
+        { ...marks.mlp, title: "SwiGLU MLP", sub: m.d + " → " + fmt(m.ff) + " → " + m.d }
+      ], sp, 0.15, 1);
+      callouts(T, cx, [
+        { ...marks.fnorm, title: "Final RMSNorm", sub: "" },
+        { ...marks.head, title: "LM head", sub: "tied to the embedding" },
+        { ...marks.out, title: "Next-token probabilities", sub: "softmax over " + fmt(V) }
+      ], sp, marks.out.y + 0.4, -1);
+    } else {
+      label(T, [0, -1.0, w * 0.9], m.name, millions(c.total) + " params · " + m.L + " blocks", "center big");
+    }
+    T.userData = { span, w, headTop };
+    return T;
+  }
+
+  function build(keyName, animate) {
+    if (root) {
+      scene.remove(root);
+      root.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+    }
+    pickables = []; labelObjs = []; stages = []; flows = [];
+    root = new THREE.Group();
+    scene.add(root);
+    if (keyName === "all") {
+      let x = 0, prev = null;
+      for (const k of KEYS) {
+        const t = buildTower(k, false);
+        const half = t.userData.span / 2 + 1.2;
+        if (prev) x += prev + half + 3.2;
+        t.position.x = x; prev = half;
+        root.add(t);
+      }
+    } else {
+      root.add(buildTower(keyName, true));
+    }
+    buildT0 = performance.now();
+    for (const s of stages) s.userData.baseY = s.position.y;
+    animating = animate;
+    if (!animate) stages.forEach(s => { s.scale.set(1, 1, 1); s.visible = true; });
+    for (const o of labelObjs) o.visible = labelsOn && !animate;
+  }
+
+  // --- camera ------------------------------------------------------------------------------
+  let camTween = null, az0 = 0.55;
+  function fitCamera(instant) {
+    const bbox = new THREE.Box3().setFromObject(root), size = new THREE.Vector3(), center = new THREE.Vector3();
+    bbox.getSize(size); bbox.getCenter(center);
+    const all = current === "all";
+    const vfov = (camera.fov * Math.PI) / 180;
+    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * camera.aspect);
+    const extraW = all ? 1.5 : 7.5;                 // room for labels
+    const pad = CLEAN ? (all ? 1.55 : 1.62) : 1.1;
+    const dist = Math.max((size.y / 2) / Math.tan(vfov / 2), ((size.x + extraW) / 2) / Math.tan(hfov / 2)) * pad;
+    const target = new THREE.Vector3(center.x + (all ? (CLEAN ? -7.5 : 0) : 1.8), size.y * (CLEAN ? (all ? 0.4 : 0.56) : 0.5), 0);
+    az0 = all ? 0.16 : 0.5;
+    const el = all ? 0.1 : CLEAN ? 0.12 : 0.18;
+    const to = new THREE.Vector3(target.x + dist * Math.sin(az0) * Math.cos(el), target.y + dist * Math.sin(el), target.z + dist * Math.cos(az0) * Math.cos(el));
+    if (instant) { camera.position.copy(to); controls.target.copy(target); controls.update(); camTween = null; return; }
+    camTween = { t0: performance.now(), fromP: camera.position.clone(), fromT: controls.target.clone(), toP: to, toT: target };
+  }
+  const ease = t => 1 - Math.pow(1 - t, 3);
+
+  // --- panel ------------------------------------------------------------------------------
+  function setStatus(text, kind, href) {
+    const old = document.getElementById("m-status");
+    const el = document.createElement(href ? "a" : "span");
+    el.className = "chip"; el.id = "m-status"; el.dataset.kind = kind; el.textContent = text;
+    if (href) { el.href = href; el.target = "_blank"; el.rel = "noopener"; }
+    el.hidden = !text;
+    old.replaceWith(el);
+  }
+  function renderPanel() {
+    const all = current === "all";
+    const splitSec = document.getElementById("split-h").parentElement;
+    if (all) {
+      document.getElementById("m-name").textContent = "Three sizes";
+      setStatus("", "next");
+      const ms = KEYS.map(k => MODELS[k]);
+      const rows = [
+        ["Parameters", ms.map(m => millions(counts(m).total))],
+        ["Blocks", ms.map(m => m.L)], ["d_model", ms.map(m => m.d)],
+        ["Heads", ms.map(m => m.H)], ["SwiGLU", ms.map(m => fmt(m.ff))]
+      ];
+      document.getElementById("m-stats").innerHTML =
+        "<dt></dt><dd>10M · 50M · 125M</dd>" + rows.map(([k, v]) => "<dt>" + k + "</dt><dd>" + v.join(" · ") + "</dd>").join("");
+      splitSec.hidden = true;
+      document.getElementById("p-title").textContent = "10M → 50M → 125M";
+      document.getElementById("p-sub").innerHTML = "One architecture at three sizes: RMSNorm · RoPE · SwiGLU · tied embeddings<br>32K BPE · context " + fmt(CTX) + " · every attention head 64 wide";
+    } else {
+      const m = MODELS[current], c = counts(m);
+      document.getElementById("m-name").textContent = m.name;
+      setStatus(m.status, m.kind, m.href);
+      const rows = [
+        ["Parameters", fmt(c.total)], ["Decoder blocks", m.L], ["d_model", m.d],
+        ["Attention heads", m.H + " × 64"], ["SwiGLU hidden", fmt(m.ff)], ["Vocabulary", fmt(V) + " BPE"],
+        ["Context", fmt(CTX) + " tokens"], ["Training data", m.data]
+      ];
+      document.getElementById("m-stats").innerHTML = rows.map(([k, v]) => "<dt>" + k + "</dt><dd>" + v + "</dd>").join("");
+      const parts = [
+        ["Embedding (tied)", c.emb, "var(--c-emb)"],
+        ["Attention", m.L * c.attn, "var(--c-attn)"],
+        ["SwiGLU MLP", m.L * c.mlp, "var(--c-up)"],
+        ["RMSNorm", m.L * c.norms + m.d, "var(--c-norm)"]
+      ];
+      const pct = v => { const p = (100 * v) / c.total; return p < 0.1 ? "<0.1%" : p.toFixed(1) + "%"; };
+      document.getElementById("m-split").innerHTML = parts.map(([n, v, col]) => '<span title="' + n + '" style="width:' + ((100 * v) / c.total) + "%;background:" + col + '"></span>').join("");
+      document.getElementById("m-splitkey").innerHTML = parts.map(([n, v, col]) => '<i style="background:' + col + '"></i><span>' + n + "</span><b>" + fmt(v) + " · " + pct(v) + "</b>").join("");
+      splitSec.hidden = false;
+      document.getElementById("p-title").textContent = m.name;
+      document.getElementById("p-sub").innerHTML = millions(c.total) + " parameters · " + m.L + " blocks · d_model " + m.d + " · " + m.H + " heads<br>RMSNorm · RoPE · SwiGLU · tied embeddings · 32K BPE · context " + fmt(CTX);
+    }
+    for (const k of [...KEYS, "all"]) document.getElementById("b-" + k).setAttribute("aria-pressed", String(k === current));
+  }
+
+  function select(k) {
+    current = k; renderPanel(); build(k, !reduceMotion && !CAPTURE); fitCamera(CAPTURE);
+  }
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => select(b.dataset.m)));
+  function toggle(id, get, set) {
+    const b = document.getElementById(id);
+    b.setAttribute("aria-pressed", String(get()));
+    b.addEventListener("click", () => { set(!get()); b.setAttribute("aria-pressed", String(get())); });
+  }
+  toggle("t-explode", () => exploded, v => { exploded = v; build(current, false); fitCamera(false); });
+  toggle("t-labels", () => labelsOn, v => { labelsOn = v; for (const o of labelObjs) o.visible = v; });
+  toggle("t-rotate", () => rotateOn, v => { rotateOn = v; });
+  toggle("t-flow", () => flowOn, v => { flowOn = v; for (const p of flows) p.visible = v; });
+
+  // --- hover ------------------------------------------------------------------------------
+  const tip = document.getElementById("tip");
+  const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
+  let hovered = null;
+  renderer.domElement.addEventListener("pointermove", ev => {
+    const r = renderer.domElement.getBoundingClientRect();
+    ptr.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ptr, camera);
+    const hit = ray.intersectObjects(pickables, false)[0];
+    const obj = hit ? hit.object : null;
+    if (hovered && hovered !== obj) hovered.material.emissiveIntensity = 0.07;
+    hovered = obj;
+    if (!obj) { tip.hidden = true; return; }
+    obj.material.emissiveIntensity = 0.35;
+    const [t, a, b] = obj.userData.info;
+    tip.innerHTML = "<strong>" + t + "</strong><span>" + a + "</span><span>" + b + "</span>";
+    tip.hidden = false;
+    const x = Math.min(ev.clientX - r.left + 14, r.width - tip.offsetWidth - 8);
+    const y = Math.min(ev.clientY - r.top + 14, r.height - tip.offsetHeight - 8);
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  });
+  renderer.domElement.addEventListener("pointerleave", () => {
+    tip.hidden = true; if (hovered) hovered.material.emissiveIntensity = 0.07; hovered = null;
+  });
+
+  // --- frame ------------------------------------------------------------------------------
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h); labelRenderer.setSize(w, h);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(() => { resize(); if (root) fitCamera(true); }).observe(stage);
+
+  function updateParticles(time) {
+    for (const pts of flows) {
+      const { n, y0, y1, x } = pts.userData, p = pts.geometry.attributes.position.array;
+      for (let i = 0; i < n; i++) {
+        const f = ((i / n) + time * 0.08) % 1;
+        p[i * 3] = x + Math.sin(i * 12.9) * 0.03; p[i * 3 + 1] = y0 + f * (y1 - y0); p[i * 3 + 2] = Math.cos(i * 7.3) * 0.03;
+      }
+      pts.geometry.attributes.position.needsUpdate = true;
+    }
+  }
+
+  // Side callouts only read from the front: fade them as the camera swings away.
+  function fadeLabels() {
+    if (current === "all") { labelRenderer.domElement.style.opacity = 1; return; }
+    const off = camera.position.clone().sub(controls.target);
+    const facing = Math.cos(Math.atan2(off.x, off.z) - az0);
+    labelRenderer.domElement.style.opacity = Math.min(1, Math.max(0, (facing - 0.55) / 0.3)).toFixed(3);
+  }
+
+  function step(now, time) {
+    if (animating) {
+      let done = true;
+      stages.forEach((s, i) => {
+        const t = Math.min(1, Math.max(0, (now - buildT0 - i * 60) / 420));
+        if (t < 1) done = false;
+        const k = ease(t);
+        s.scale.set(1, Math.max(0.001, k), 1);
+        s.position.y = s.userData.baseY + (1 - k) * 0.6;
+        s.visible = t > 0;
+      });
+      if (done) { animating = false; for (const o of labelObjs) o.visible = labelsOn; }
+    }
+    if (camTween) {
+      const t = Math.min(1, (now - camTween.t0) / 900), k = ease(t);
+      camera.position.lerpVectors(camTween.fromP, camTween.toP, k);
+      controls.target.lerpVectors(camTween.fromT, camTween.toT, k);
+      if (t >= 1) camTween = null;
+    }
+    controls.autoRotate = rotateOn && !camTween;
+    controls.update();
+    updateParticles(time);
+    fadeLabels();
+    renderer.render(scene, camera);
+    labelRenderer.render(scene, camera);
+  }
+
+  resize();
+  renderPanel();
+  build(current, !reduceMotion && !CAPTURE);
+  fitCamera(true);
+
+  if (!CAPTURE) {
+    const loop = now => { step(now, now / 1000); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  }
+
+  // Deterministic frames for exporting a still or a turntable video: turn in [0, 1), time in s.
+  const home = { p: camera.position.clone(), t: controls.target.clone() };
+  window.SYRINX = {
+    frame(turn, time) {
+      const t = home.t, off = home.p.clone().sub(t);
+      const r = Math.hypot(off.x, off.z), az = Math.atan2(off.x, off.z) + turn * Math.PI * 2;
+      camera.position.set(t.x + r * Math.sin(az), home.p.y, t.z + r * Math.cos(az));
+      camera.lookAt(t);
+      controls.target.copy(t);
+      updateParticles(time);
+      fadeLabels();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+      return true;
+    },
+    ready: document.fonts ? document.fonts.ready.then(() => true) : Promise.resolve(true)
+  };
+})();
+</script>
