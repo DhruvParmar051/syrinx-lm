@@ -7,6 +7,8 @@ released as a checkpoint that loads with `LlamaForCausalLM`, no custom code need
 
 ![The three Syrinx sizes as 3D towers: 10M with 4 blocks, 50M with 10, 125M with 12](docs/figures/architecture-three-sizes.png)
 
+Uploading syrinx-125m-turntable.mp4…
+
 Each block is RMSNorm → causal attention with RoPE (one fin per 64-wide head) → RMSNorm → SwiGLU,
 added back into the residual stream; the LM head shares its weights with the embedding.
 [`docs/architecture/syrinx-3d.html`](docs/architecture/syrinx-3d.html) is an interactive version
