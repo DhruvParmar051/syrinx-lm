@@ -252,5 +252,36 @@ call and surprise users; fp32 is lossless and is what parity is checked in.
 **Revisit if:** benchmarks show a large difference with and without the leading EOS (consider a
 post-processor), or the release needs a smaller bf16 copy (add it alongside the fp32 weights).
 
+## 2026-10-15 — Phase 6 (125M) sweep, Gate 6a and the 50M wrap-up
+**Context:** the 50M sweep picked its highest LR, 1.2e-3 (EXP-013), which triggers the "extend the
+sweep upward" revisit above. 125M steps are long: at the EXP-000 proxy's 6,674 tok/s, one 524,288-token
+step takes ~79 s, a 300-step sweep run ~6.5 h, and the 4,769-step full run ~4.3 days (estimates; Gate
+6a measures the real rate). The 50M run (measured ~15.0k tok/s, 1.12x its proxy) ends first.
+**Decision:**
+- **Tokens per optimizer step: 524,288** (micro-batch 8 x accumulation 64 x 1024), 4,769 steps for
+  2.5B tokens, as planned. Micro-batch 8: proxy 20.1 GiB driver-allocated against the 37.44 GiB ceiling.
+- **Peak LR: chosen by a sweep** over 1.2e-3, 6e-4 and 2.4e-3 (centred on the 50M winner, one step either
+  side), 300 steps each, same pick rule as Phase 5. About 20 h in total at the proxy rate.
+- **Gate 6a uses the first sweep run (1.2e-3)** as its sustained benchmark: median tok/s over its last
+  15 min (`scripts/throughput_report.py`), excluding eval and checkpoint time. The pipeline continues
+  by itself only if the decision is `full-budget` (>= 4,000 tok/s) and the median is no more than 30%
+  below the proxy; otherwise it stops and the token budget is decided by hand (recorded in
+  `experiments/gate6a-125m-accepted.txt` when overridden with `GATE6A_ACCEPT=1`).
+- **Unchanged from the config:** min LR = peak/10, 300 warmup steps, weight decay 0.1, betas
+  (0.9, 0.95), grad clip 1.0; val 100 batches every 250 steps; checkpoints every 250 steps, keep 3,
+  milestone every 1,000 (about 1.49 GB each, estimated as 124.28M parameters x 12 bytes).
+- **50M wrap-up runs first**, chained by `scripts/run_phase6.sh`: full-split eval (bf16 autocast), HF
+  export with parity, then benchmarks (only if parity passed). A failure there is logged and does not
+  block the 125M run.
+**Why:** a lower LR is the usual direction as models grow, and 2.4e-3 answers the open question from
+the 50M sweep; three runs keep the sweep under a day. Measuring Gate 6a on a 6.5 h sweep run costs
+nothing extra and is far longer than the 30-45 min PLAN.md asks for. Wrapping up the 50M first (under
+an hour, estimated) lets it be released while the 125M trains.
+**Caveat:** the sweep length equals the 300-step warmup, so the runs are compared at the moment they
+reach peak LR, not after time at it (the 50M sweep had 100 steps at peak). Instability at a high LR
+usually shows up during warmup already, but the ranking of close runs is less certain than at 50M.
+**Revisit if:** Gate 6a stops the pipeline; the best LR is again an end of the range; or the sweep's
+top two are within the 0.01 tie band, where a longer comparison would be worth its cost.
+
 ## Open (not yet decided)
-- 125M batch and LR: to be set from the 50M sweep and the Gate 6a throughput measurement.
+- Nothing open for Phase 6; see the 2026-10-15 entry.
