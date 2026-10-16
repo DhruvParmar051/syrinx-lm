@@ -41,7 +41,10 @@ packages = ["src/syrinx"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["mps: requires the Apple MPS backend (skipped when unavailable or SYRINX_DEVICE=cpu)"]
+markers = [
+    "mps: requires the Apple MPS backend (skipped when unavailable or SYRINX_DEVICE=cpu)",
+    "cuda: requires an NVIDIA CUDA GPU (skipped when unavailable or SYRINX_DEVICE=cpu)",
+]
 
 [tool.ruff]
 line-length = 100
