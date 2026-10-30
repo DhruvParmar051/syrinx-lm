@@ -1,0 +1,14 @@
+# 2026-10-30 13:55:52 | git ee9be1e | Now drawing from 'AC Power'
+2026-10-30 13:55:53 INFO    syrinx.utils.device: Using device mps (from auto-detect)
+{"checkpoint": "runs/50m-a/checkpoints/step_0003815.pt", "step": 3815, "val_path": "data_cache/tokens/fineweb-edu/val", "seq_len": 1024, "batch_size": 16, "precision": "bf16-autocast", "max_batches": null, "windows": 11929, "tokens": 12215296, "bytes": 54310934, "eos_targets": 11512, "loss": 3.3206283007476345, "perplexity": 27.677735038221403, "bpb": 1.0774857310541794, "seconds": 140.09246054200048, "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"}
+real 141.44
+user 2.59
+sys 0.81
+exit 0
+# 2026-10-30 13:59:00 | git ee9be1e | Now drawing from 'AC Power'
+2026-10-30 13:59:01 INFO    syrinx.utils.device: Using device mps (from auto-detect)
+{"checkpoint": "runs/50m-a/checkpoints/step_0003815.pt", "step": 3815, "val_path": "data_cache/tokens/fineweb-edu/val", "seq_len": 1024, "batch_size": 16, "precision": "fp32", "max_batches": null, "windows": 11929, "tokens": 12215296, "bytes": 54310934, "eos_targets": 11512, "loss": 3.320486577661012, "perplexity": 27.67381274212759, "bpb": 1.0774397443944976, "seconds": 282.2543264579999, "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"}
+real 283.37
+user 2.31
+sys 0.67
+exit 0

@@ -1,0 +1,18 @@
+{
+  "checkpoint": "runs/50m-a/checkpoints/step_0003815.pt",
+  "step": 3815,
+  "val_path": "data_cache/tokens/fineweb-edu/val",
+  "seq_len": 1024,
+  "batch_size": 16,
+  "precision": "bf16-autocast",
+  "max_batches": null,
+  "windows": 11929,
+  "tokens": 12215296,
+  "bytes": 54310934,
+  "eos_targets": 11512,
+  "loss": 3.3206283007476345,
+  "perplexity": 27.677735038221403,
+  "bpb": 1.0774857310541794,
+  "seconds": 140.09246054200048,
+  "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"
+}

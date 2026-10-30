@@ -678,3 +678,32 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   was stopped and resumed seven times; resume reproduced the logged losses (above), but a run without
   interruptions was not done for comparison.
 
+## EXP-019 — Full-split evaluation of the 50M model (Phase 5 wrap-up)
+- Date: 2026-10-30
+- Git SHA: ee9be1e (tracked files clean apart from run logs)
+- Checkpoint: `runs/50m-a/checkpoints/step_0003815.pt` (EXP-018)
+- Commands: `uv run python scripts/eval_checkpoint.py --checkpoint runs/50m-a/checkpoints/step_0003815.pt
+  --precision <p> --out experiments/eval-50m-a-step3815-<p>.json` for `<p>` = `bf16-autocast` (the
+  training precision; the command `scripts/run_phase6.sh` uses) and `fp32`; batch size 16 and val path
+  from the checkpoint config
+- Raw output: [`eval-50m-a-step3815.txt`](eval-50m-a-step3815.txt),
+  [`eval-50m-a-step3815-bf16-autocast.json`](eval-50m-a-step3815-bf16-autocast.json),
+  [`eval-50m-a-step3815-fp32.json`](eval-50m-a-step3815-fp32.json)
+- Hardware state: AC power, MPS
+- Data: FineWeb-Edu val shard, 11,929 non-overlapping 1,024-token windows = 12,215,296 target tokens,
+  54,310,934 bytes, 11,512 EOS targets (in the loss, 0 bytes).
+- Metrics (source: the JSON files):
+
+  | precision | loss (nats/token) | perplexity | bits per byte | seconds |
+  |---|---|---|---|---|
+  | bf16-autocast | 3.32063 | 27.678 | **1.07749** | 140.1 |
+  | fp32 | 3.32049 | 27.674 | 1.07744 | 282.3 |
+
+- Time: bf16 140 s against an estimate of ~2.5 min, scaled from the 100-batch training-time evaluation
+  (19 s, EXP-018 log timestamps) to 746 batches.
+- Observations: the full-split loss (3.3206) is 0.001 below the 100-batch value at step 3815 (3.3217,
+  EXP-018). bf16 and fp32 differ by 1.4e-4 nats per token (EXP-014: 1.7e-4). fp32 took 2.0x as long.
+  Bytes per target token: 4.446 (54,310,934 / 12,215,296).
+- Caveats: same window convention as EXP-014 (non-overlapping, so early positions have short context).
+  Not comparable with the 10m numbers of EXP-014: different text (TinyStories vs FineWeb-Edu).
+
