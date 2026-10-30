@@ -1,0 +1,4 @@
+# 2026-10-30 14:37:10 | git 7c07d6d | Now drawing from 'AC Power'
+# command: hf upload DhruvParmar051/syrinx-10m docs/model-cards/syrinx-10m.md README.md --commit-message 'Update the model card: note on small contaminated subsets'
+url=https://huggingface.co/DhruvParmar051/syrinx-10m/commit/0fee8a3febe375e4edb84f00ef94be3d2c0924f8
+# verify: hub README.md matches docs/model-cards/syrinx-10m.md

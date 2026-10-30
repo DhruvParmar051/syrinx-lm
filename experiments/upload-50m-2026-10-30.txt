@@ -1,0 +1,17 @@
+# 2026-10-30 14:31:20 | git 7c07d6d | Now drawing from 'AC Power'
+# command: hf repo create DhruvParmar051/syrinx-50m --repo-type model (public, as syrinx-10m)
+Warning: `hf repo` is deprecated in favor of `hf repos`.
+repo_id=DhruvParmar051/syrinx-50m url=https://huggingface.co/DhruvParmar051/syrinx-50m
+# command: hf upload DhruvParmar051/syrinx-50m exports/syrinx-50m . --commit-message 'Upload syrinx-50m (step 3815)'
+Uploading... 7/7 files checked, 0/1 uploaded (168MB transferred), 0 committed in 0 commit(s)
+Uploading... 7/7 files checked, 1/1 uploaded (203MB transferred), 0 committed in 0 commit(s)
+url=https://huggingface.co/DhruvParmar051/syrinx-50m/commit/406e21037695dc73eec47a287448d1ad3a14da9b
+exit 0
+# verify: public sha 406e21037695dc73eec47a287448d1ad3a14da9b
+# README.md: match (size)
+# config.json: match (size)
+# generation_config.json: match (size)
+# model.safetensors: match (sha256)
+# parity.json: match (size)
+# tokenizer.json: match (size)
+# tokenizer_config.json: match (size)
