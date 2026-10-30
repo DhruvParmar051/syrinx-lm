@@ -707,3 +707,28 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
 - Caveats: same window convention as EXP-014 (non-overlapping, so early positions have short context).
   Not comparable with the 10m numbers of EXP-014: different text (TinyStories vs FineWeb-Edu).
 
+## EXP-020 — Hugging Face export of the 50M model: parity and HF-only generation (Phase 9)
+- Date: 2026-10-30
+- Git SHA: ee9be1e (tracked files clean apart from run logs)
+- Checkpoint: `runs/50m-a/checkpoints/step_0003815.pt` (EXP-018)
+- Command: `uv run python scripts/export_hf.py --checkpoint runs/50m-a/checkpoints/step_0003815.pt
+  --out-dir exports/syrinx-50m` (defaults as in EXP-015); then the EXP-015 HF-only generation check with
+  prompt `<|endoftext|>The water cycle is`, 150 new tokens max, `torch.manual_seed(0)`
+- Raw output: [`export-50m-a-step3815.txt`](export-50m-a-step3815.txt) (script output, file sizes,
+  SHA-256 of every exported file, the generation record) and
+  [`export-50m-a-step3815-parity.json`](export-50m-a-step3815-parity.json) (copy of `parity.json`);
+  the export itself is in `exports/syrinx-50m/` (not tracked)
+- Hardware state: AC power
+- Metrics (source: the parity file and the raw output):
+  - Logit parity, fp32 on the CPU, 2 x 1,024 random ids: max abs difference **0.0** (tolerance 1e-4). PASS.
+  - Tokenizer parity on the 4 `PARITY_TEXTS`: PASS. `tokenizer.json` has the same SHA-256 as the 10m export.
+  - Export: `model.safetensors` 203,476,920 bytes (fp32, tied head not stored), `LlamaForCausalLM`
+    config hidden 512, 10 layers, 8 heads (8 KV heads), intermediate 1536, vocab 32,768, context 1,024,
+    RoPE theta 10,000, tied embeddings; transformers 5.17.0. Export took 6.6 s wall.
+  - HF-only generation: sampling with the exported defaults (temperature 0.8, top-k 50) produced 150 new
+    tokens without reaching EOS. The text is fluent English on the prompt's topic but factually confused
+    and repetitive ("the process of changing the water cycle due to changes in the temperature").
+- Result: Phase 9 parity gate met for the 50M model.
+- Caveats: parity uses random ids; generation was checked on one prompt and one seed. The first command
+  attempt failed before running (a shell quoting error, exit 127) and wrote nothing; its log lines were removed.
+

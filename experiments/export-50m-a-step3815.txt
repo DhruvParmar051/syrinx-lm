@@ -1,0 +1,25 @@
+# 2026-10-30 14:05:02 | git ee9be1e | Now drawing from 'AC Power'
+# command: uv run python scripts/export_hf.py --checkpoint runs/50m-a/checkpoints/step_0003815.pt --out-dir exports/syrinx-50m
+Writing model shards:   0%|          | 0/1 [00:00<?, ?it/s]Writing model shards: 100%|██████████| 1/1 [00:00<00:00, 10.93it/s]
+Loading weights:   0%|          | 0/92 [00:00<?, ?it/s]Loading weights: 100%|██████████| 92/92 [00:00<00:00, 3934.38it/s]
+{"checkpoint": "runs/50m-a/checkpoints/step_0003815.pt", "step": 3815, "out_dir": "exports/syrinx-50m", "transformers_version": "5.17.0", "batch": 2, "seq_len": 1024, "max_abs_logit_diff": 0.0, "tolerance": 0.0001, "logits_ok": true, "tokenizer_ok": true, "passed": true}
+real 6.61
+user 3.95
+sys 0.86
+exit 0
+# files:
+     719 config.json
+     182 generation_config.json
+ 203476920 model.safetensors
+     296 parity.json
+ 2328862 tokenizer.json
+     231 tokenizer_config.json
+# sha256:
+7c8b30a26bae74f70b6489e48b1dc1f616e7d103a5309019ba7a8e031d40fcd3  exports/syrinx-50m/config.json
+32c24aff9c1840d4b47b6b1e3a68308d2ec6879d6eb6183dda05b0935a5f60c4  exports/syrinx-50m/generation_config.json
+13e7981df6adc109bf0ad6c8817dbcde54be2b378b5518b531668b6b95020aa0  exports/syrinx-50m/model.safetensors
+21e0516e62d0cbe7f435e9014be4ccfecd8804763d8adb4a2ec1e7dbf4ae2f21  exports/syrinx-50m/parity.json
+51349fdd96dea09960c891aec37503b36f0e86d133e96a4912585750ab29e328  exports/syrinx-50m/tokenizer.json
+f6b082a2985585bae2fa637a2199e4738a999f3cfc615ed9245c5f13afe96ed6  exports/syrinx-50m/tokenizer_config.json
+# HF-only generation check: AutoModelForCausalLM.generate with the exported generation_config, torch.manual_seed(0)
+{"prompt": "<|endoftext|>The water cycle is", "settings": {"do_sample": true, "temperature": 0.8, "top_k": 50}, "new_tokens": 150, "stopped_at_eos": false, "text": " a complicated process and requires a large amount of data and equipment to be analyzed. This information needs to be processed in a lab or lab (for example, a laboratory\u2019s lab and laboratory labs). You should know the water cycle to ensure it is accurate and you can report it anywhere on the water cycle.\nThis information comes from the data gathered by the lab. The data is then sent to the laboratory. You can also use the data from the lab to create the data.\nYou should be able to provide a full picture of how the water cycle works and how it works.\nThe Water Cycle\nThe water cycle is the process of changing the water cycle due to changes in the temperature (temperature) and the temperature (sun). To"}
