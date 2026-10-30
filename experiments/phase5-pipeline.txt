@@ -21,3 +21,75 @@ runs/50m-sweep/lr-1.2e-03.yaml
 {"step": 300, "spike_nats": 1.0, "tolerance": 0.01, "runs": [{"run": "runs/50m-sweep/lr-3.0e-04", "lr": 0.0003, "val_loss": 5.193465089797973, "stable": true, "reason": "ok"}, {"run": "runs/50m-sweep/lr-6.0e-04", "lr": 0.0006, "val_loss": 4.862870993614197, "stable": true, "reason": "ok"}, {"run": "runs/50m-sweep/lr-1.2e-03", "lr": 0.0012, "val_loss": 4.675170724391937, "stable": true, "reason": "ok"}], "chosen": {"run": "runs/50m-sweep/lr-1.2e-03", "lr": 0.0012, "val_loss": 4.675170724391937, "stable": true, "reason": "ok"}}
 pick exit 0
 # 2026-10-13 09:01:09 | LR picked; 50M run NOT started (by request)
+# 2026-10-14 15:07:13 | git d98304c | Now drawing from 'AC Power' | pipeline start
+# 2026-10-14 15:07:13 | git d98304c | Now drawing from 'AC Power' | 10m run complete: runs/10m-a/checkpoints/step_0009000.pt
+# 2026-10-14 15:07:13 | git d98304c | Now drawing from 'AC Power' | 10m samples written: experiments/samples-10m-a-step9000.jsonl experiments/samples-10m-a-step9000-greedy.jsonl
+2026-10-14 15:07:13 INFO    __main__: keeping existing runs/50m-sweep/lr-3.0e-04.yaml
+2026-10-14 15:07:13 INFO    __main__: keeping existing runs/50m-sweep/lr-6.0e-04.yaml
+2026-10-14 15:07:13 INFO    __main__: keeping existing runs/50m-sweep/lr-1.2e-03.yaml
+# 2026-10-14 15:07:13 | git d98304c | Now drawing from 'AC Power' | 50M config: runs/50m-a.yaml (lr   lr: 0.0012)
+# 2026-10-14 15:07:13 | git d98304c | Now drawing from 'AC Power' | train attempt 1: --out-dir runs/50m-a  --config runs/50m-a.yaml --log-interval 10 --eval-interval 250 --eval-batches 100 --ckpt-interval 250 --keep-last 3 --milestone-every 1000
+# 2026-10-14 18:59:01 | 50M run stopped by request; resume from runs/50m-a/checkpoints/step_0000750.pt
+# 2026-10-15 10:05:55 | git 4b05e9a | Now drawing from 'AC Power' | pipeline start
+# 2026-10-15 10:05:55 | git 4b05e9a | Now drawing from 'AC Power' | 10m run complete: runs/10m-a/checkpoints/step_0009000.pt
+# 2026-10-15 10:05:55 | git 4b05e9a | Now drawing from 'AC Power' | 10m samples written: experiments/samples-10m-a-step9000.jsonl experiments/samples-10m-a-step9000-greedy.jsonl
+2026-10-15 10:05:55 INFO    __main__: keeping existing runs/50m-sweep/lr-3.0e-04.yaml
+2026-10-15 10:05:55 INFO    __main__: keeping existing runs/50m-sweep/lr-6.0e-04.yaml
+2026-10-15 10:05:55 INFO    __main__: keeping existing runs/50m-sweep/lr-1.2e-03.yaml
+# 2026-10-15 10:05:55 | git 4b05e9a | Now drawing from 'AC Power' | 50M config: runs/50m-a.yaml (lr   lr: 0.0012)
+# 2026-10-15 10:05:55 | git 4b05e9a | Now drawing from 'AC Power' | train attempt 1: --out-dir runs/50m-a --resume --config runs/50m-a.yaml --log-interval 10 --eval-interval 250 --eval-batches 100 --ckpt-interval 250 --keep-last 3 --milestone-every 1000
+# 2026-10-15 11:18:08 | git 37cd55f | Now drawing from 'AC Power' | pipeline start
+# 2026-10-15 11:18:08 | git 37cd55f | Now drawing from 'AC Power' | 10m run complete: runs/10m-a/checkpoints/step_0009000.pt
+# 2026-10-15 11:18:08 | git 37cd55f | Now drawing from 'AC Power' | 10m samples written: experiments/samples-10m-a-step9000.jsonl experiments/samples-10m-a-step9000-greedy.jsonl
+2026-10-15 11:18:09 INFO    __main__: keeping existing runs/50m-sweep/lr-3.0e-04.yaml
+2026-10-15 11:18:09 INFO    __main__: keeping existing runs/50m-sweep/lr-6.0e-04.yaml
+2026-10-15 11:18:09 INFO    __main__: keeping existing runs/50m-sweep/lr-1.2e-03.yaml
+# 2026-10-15 11:18:09 | git 37cd55f | Now drawing from 'AC Power' | 50M config: runs/50m-a.yaml (lr   lr: 0.0012)
+# 2026-10-15 11:18:09 | git 37cd55f | Now drawing from 'AC Power' | train attempt 1: --out-dir runs/50m-a --resume --config runs/50m-a.yaml --log-interval 10 --eval-interval 250 --eval-batches 100 --ckpt-interval 250 --keep-last 3 --milestone-every 1000
+# 2026-10-15 13:44:59 | 50M run stopped by request after the step-1250 checkpoint; resume from runs/50m-a/checkpoints/step_0001250.pt
+# 2026-10-16 09:35:53 | git 050cc05 | Now drawing from 'AC Power' | pipeline start
+# 2026-10-16 09:35:53 | git 050cc05 | Now drawing from 'AC Power' | 10m run complete: runs/10m-a/checkpoints/step_0009000.pt
+# 2026-10-16 09:35:53 | git 050cc05 | Now drawing from 'AC Power' | 10m samples written: experiments/samples-10m-a-step9000.jsonl experiments/samples-10m-a-step9000-greedy.jsonl
+2026-10-16 09:35:53 INFO    __main__: keeping existing runs/50m-sweep/lr-3.0e-04.yaml
+2026-10-16 09:35:53 INFO    __main__: keeping existing runs/50m-sweep/lr-6.0e-04.yaml
+2026-10-16 09:35:53 INFO    __main__: keeping existing runs/50m-sweep/lr-1.2e-03.yaml
+# 2026-10-16 09:35:53 | git 050cc05 | Now drawing from 'AC Power' | 50M config: runs/50m-a.yaml (lr   lr: 0.0012)
+# 2026-10-16 09:35:53 | git 050cc05 | Now drawing from 'AC Power' | train attempt 1: --out-dir runs/50m-a --resume --config runs/50m-a.yaml --log-interval 10 --eval-interval 250 --eval-batches 100 --ckpt-interval 250 --keep-last 3 --milestone-every 1000
+# 2026-10-16 12:23:18 | 50M run stopped by request at step ~1820; resume from runs/50m-a/checkpoints/step_0001750.pt
+# 2026-10-28 20:17:40 | git ee9be1e | Now drawing from 'Battery Power' | pipeline start
+# 2026-10-28 20:17:40 | git ee9be1e | Now drawing from 'Battery Power' | 10m run complete: runs/10m-a/checkpoints/step_0009000.pt
+# 2026-10-28 20:17:40 | git ee9be1e | Now drawing from 'Battery Power' | 10m samples written: experiments/samples-10m-a-step9000.jsonl experiments/samples-10m-a-step9000-greedy.jsonl
+2026-10-28 20:17:40 INFO    __main__: keeping existing runs/50m-sweep/lr-3.0e-04.yaml
+2026-10-28 20:17:40 INFO    __main__: keeping existing runs/50m-sweep/lr-6.0e-04.yaml
+2026-10-28 20:17:40 INFO    __main__: keeping existing runs/50m-sweep/lr-1.2e-03.yaml
+# 2026-10-28 20:17:40 | git ee9be1e | Now drawing from 'Battery Power' | 50M config: runs/50m-a.yaml (lr   lr: 0.0012)
+# 2026-10-28 20:17:40 | git ee9be1e | Now drawing from 'Battery Power' | train attempt 1: --out-dir runs/50m-a --resume --config runs/50m-a.yaml --log-interval 10 --eval-interval 250 --eval-batches 100 --ckpt-interval 250 --keep-last 3 --milestone-every 1000
+# 2026-10-28 20:30:51 | 50M run stopped by request (on battery, ~34 s/step); resume from runs/50m-a/checkpoints/step_0001750.pt
+# 2026-10-29 09:45:06 | git ee9be1e | Now drawing from 'AC Power' | pipeline start
+# 2026-10-29 09:45:06 | git ee9be1e | Now drawing from 'AC Power' | 10m run complete: runs/10m-a/checkpoints/step_0009000.pt
+# 2026-10-29 09:45:06 | git ee9be1e | Now drawing from 'AC Power' | 10m samples written: experiments/samples-10m-a-step9000.jsonl experiments/samples-10m-a-step9000-greedy.jsonl
+2026-10-29 09:45:06 INFO    __main__: keeping existing runs/50m-sweep/lr-3.0e-04.yaml
+2026-10-29 09:45:06 INFO    __main__: keeping existing runs/50m-sweep/lr-6.0e-04.yaml
+2026-10-29 09:45:06 INFO    __main__: keeping existing runs/50m-sweep/lr-1.2e-03.yaml
+# 2026-10-29 09:45:06 | git ee9be1e | Now drawing from 'AC Power' | 50M config: runs/50m-a.yaml (lr   lr: 0.0012)
+# 2026-10-29 09:45:06 | git ee9be1e | Now drawing from 'AC Power' | train attempt 1: --out-dir runs/50m-a --resume --config runs/50m-a.yaml --log-interval 10 --eval-interval 250 --eval-batches 100 --ckpt-interval 250 --keep-last 3 --milestone-every 1000
+# 2026-10-29 16:32:59 | 50M run stopped by request at step ~3150; resume from runs/50m-a/checkpoints/step_0003000.pt
+# 2026-10-30 09:42:31 | git ee9be1e | Now drawing from 'AC Power' | pipeline start
+# 2026-10-30 09:42:31 | git ee9be1e | Now drawing from 'AC Power' | 10m run complete: runs/10m-a/checkpoints/step_0009000.pt
+# 2026-10-30 09:42:31 | git ee9be1e | Now drawing from 'AC Power' | 10m samples written: experiments/samples-10m-a-step9000.jsonl experiments/samples-10m-a-step9000-greedy.jsonl
+2026-10-30 09:42:31 INFO    __main__: keeping existing runs/50m-sweep/lr-3.0e-04.yaml
+2026-10-30 09:42:31 INFO    __main__: keeping existing runs/50m-sweep/lr-6.0e-04.yaml
+2026-10-30 09:42:31 INFO    __main__: keeping existing runs/50m-sweep/lr-1.2e-03.yaml
+# 2026-10-30 09:42:31 | git ee9be1e | Now drawing from 'AC Power' | 50M config: runs/50m-a.yaml (lr   lr: 0.0012)
+# 2026-10-30 09:42:31 | git ee9be1e | Now drawing from 'AC Power' | train attempt 1: --out-dir runs/50m-a --resume --config runs/50m-a.yaml --log-interval 10 --eval-interval 250 --eval-batches 100 --ckpt-interval 250 --keep-last 3 --milestone-every 1000
+# 2026-10-30 12:09:42 | 50M run stopped by request at step 3500; resume from runs/50m-a/checkpoints/step_0003500.pt
+# 2026-10-30 12:10:48 | git ee9be1e | Now drawing from 'AC Power' | pipeline start
+# 2026-10-30 12:10:48 | git ee9be1e | Now drawing from 'AC Power' | 10m run complete: runs/10m-a/checkpoints/step_0009000.pt
+# 2026-10-30 12:10:48 | git ee9be1e | Now drawing from 'AC Power' | 10m samples written: experiments/samples-10m-a-step9000.jsonl experiments/samples-10m-a-step9000-greedy.jsonl
+2026-10-30 12:10:48 INFO    __main__: keeping existing runs/50m-sweep/lr-3.0e-04.yaml
+2026-10-30 12:10:48 INFO    __main__: keeping existing runs/50m-sweep/lr-6.0e-04.yaml
+2026-10-30 12:10:48 INFO    __main__: keeping existing runs/50m-sweep/lr-1.2e-03.yaml
+# 2026-10-30 12:10:49 | git ee9be1e | Now drawing from 'AC Power' | 50M config: runs/50m-a.yaml (lr   lr: 0.0012)
+# 2026-10-30 12:10:49 | git ee9be1e | Now drawing from 'AC Power' | train attempt 1: --out-dir runs/50m-a --resume --config runs/50m-a.yaml --log-interval 10 --eval-interval 250 --eval-batches 100 --ckpt-interval 250 --keep-last 3 --milestone-every 1000
+# 2026-10-30 13:43:47 | git ee9be1e | Now drawing from 'Battery Power' | train attempt 1 for runs/50m-a exited 0
+# 2026-10-30 13:43:47 | git ee9be1e | Now drawing from 'Battery Power' | pipeline complete: runs/50m-a/checkpoints/step_0003815.pt

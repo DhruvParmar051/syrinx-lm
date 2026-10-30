@@ -618,3 +618,63 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
 - Caveats: one model, one run, 0-shot; scores near chance are sensitive to prompt format, so they are only
   comparable to runs with the same task configs (`task_config_sha256` in the JSON). Not comparable with
   published scores of other models without matching data, prompts and normalization.
+
+## EXP-018 — Full 50M run on FineWeb-Edu, 1.0B tokens (Phase 5)
+- Date: 2026-10-14 15:07 to 2026-10-30 13:43, in eight segments (below)
+- Git SHA: d98304c, 4b05e9a, 37cd55f, 050cc05, ee9be1e (one per segment; `git diff d98304c ee9be1e`
+  touches no model, training or data code, only `src/syrinx/model_card.py` and `src/syrinx/utils/throughput.py`)
+- Config: [`50m-a-config.yaml`](50m-a-config.yaml) (copy of `runs/50m-a.yaml`: `configs/syrinx-50m.yaml`
+  with the EXP-013 pick, lr 1.2e-3 -> 1.2e-4; micro-batch 16 x accum 16 = 262,144 tokens/step, seq 1024,
+  bf16-autocast, warmup 200, 3,815 steps, seed 1337)
+- Command: `scripts/run_phase5.sh` stage 5, i.e. `uv run python scripts/train.py --out-dir runs/50m-a
+  [--resume] --config runs/50m-a.yaml --log-interval 10 --eval-interval 250 --eval-batches 100
+  --ckpt-interval 250 --keep-last 3 --milestone-every 1000`, launched with `nohup caffeinate -is` from Terminal.app
+- Raw output: [`50m-a-train.txt`](50m-a-train.txt) (every segment), pipeline log
+  [`phase5-pipeline.txt`](phase5-pipeline.txt) (start, stop and resume notes); per-step records in
+  `runs/50m-a/metrics.jsonl` (not tracked)
+- Segments (from the log headers and the last log line of each; every stop was by request):
+
+  | # | start | end | steps run | power | resumed from |
+  |---|---|---|---|---|---|
+  | 1 | 10-14 15:07 | 10-14 18:57 | 1-750 | AC | |
+  | 2 | 10-15 10:05 | 10-15 11:04 | 751-950 | AC | step 750 |
+  | 3 | 10-15 11:18 | 10-15 13:44 | 751-1250 | AC | step 750 |
+  | 4 | 10-16 09:35 | 10-16 12:21 | 1251-1820 | AC | step 1250 |
+  | 5 | 10-28 20:17 | 10-28 20:28 | 1751-1770 | battery | step 1750 |
+  | 6 | 10-29 09:45 | 10-29 16:32 | 1751-3150 | AC | step 1750 |
+  | 7 | 10-30 09:42 | 10-30 12:08 | 3001-3500 | AC | step 3000 |
+  | 8 | 10-30 12:10 | 10-30 13:43 | 3501-3815 | AC (battery at the end) | step 3500 |
+
+  Segment 2 has no stop note in the pipeline log; segment 3 restarted from the step-750 checkpoint
+  under a new commit. 440 steps were run twice (steps past the last checkpoint at each stop).
+- Hardware state: AC power except segment 5 and the final minutes of segment 8. Other GPU processes
+  were not checked; the AC throughput is steady across segments (below).
+- Tokens / steps: 3,815 steps x 262,144 = 1,000,079,360 tokens (`tokens_seen` at step 3815), about 0.40
+  of the 2,500,678,395-token FineWeb-Edu train split (EXP-005), drawn as random windows.
+- Metrics (source: `metrics.jsonl`, val = mean over the first 100 val batches, 1,638,400 tokens):
+
+  | step | 250 | 500 | 750 | 1000 | 1500 | 2000 | 2500 | 3000 | 3500 | 3750 | 3815 |
+  |---|---|---|---|---|---|---|---|---|---|---|---|
+  | val loss | 4.8854 | 4.1354 | 3.8626 | 3.7318 | 3.5781 | 3.4851 | 3.4142 | 3.3638 | 3.3319 | 3.3231 | **3.3217** |
+
+  Final train loss 3.3581 (single batch at step 3815). The val loss fell at every one of the 16
+  evaluations. No non-finite loss or grad norm in 426 logged train records; max grad norm 4.41 (step 20,
+  warmup), 0.737 after step 200.
+- Resume: steps 1760-1820 logged the same losses to 4 decimals in segments 4, 5 and 6, and steps 1760-1770
+  in segments 5 and 6 (one of them on battery). Step 760 logged 3.8234 (segment 2) and 3.8235 (segment 3),
+  a 1e-4 difference within the MPS run-to-run noise of EXP-011.
+- Peak memory: 17.94 GiB measured (`mem_peak`, every segment) vs 16.01 GiB estimated (20.01 GiB with the
+  x1.25 margin, EXP-013): +12% over the unmargined estimate, inside the margined one.
+- Throughput (`tokens_per_sec`, logged steps >= 20): median 15,091-15,192 tok/s per AC segment (median
+  step time 17.26-17.37 s); segment 5 on battery 7,715 tok/s (33.98 s/step), half the AC rate, as in
+  EXP-001. The 7,830 tok/s minimum in segments 7-8 is one logged step; its cause is not identified.
+- Wall clock: 20.97 h summed over the eight segments (header to last log line), including 440 repeated
+  steps and the 16 evaluations; 3,815 steps at the 17.27 s median would be 18.3 h. Only segment 8 has a
+  `/usr/bin/time` line (real 5,578.07 s).
+- Checkpoints: 610,527,643 bytes each; kept `step_0001000.pt`, `step_0002000.pt`, `step_0003000.pt`
+  (milestones) and `step_0003500.pt`, `step_0003750.pt`, `step_0003815.pt`.
+- Result: the 50M model trained to its full 1.0B-token budget at the swept LR without instability.
+- Caveats: one seed; the val losses here are 100-batch estimates (the full split is EXP-019). The run
+  was stopped and resumed seven times; resume reproduced the logged losses (above), but a run without
+  interruptions was not done for comparison.
+

@@ -1,0 +1,29 @@
+name: syrinx-50m
+model:
+  vocab_size: 32768
+  d_model: 512
+  n_layers: 10
+  n_heads: 8
+  d_ff: 1536
+  max_seq_len: 1024
+  rope_theta: 10000.0
+  norm_eps: 1.0e-05
+  tie_embeddings: true
+train:
+  micro_batch_size: 16
+  grad_accum_steps: 16
+  lr: 0.0012
+  min_lr: 0.00012
+  warmup_steps: 200
+  max_steps: 3815
+  weight_decay: 0.1
+  betas:
+  - 0.9
+  - 0.95
+  grad_clip: 1.0
+  precision: bf16-autocast
+  seed: 1337
+data:
+  train_path: data_cache/tokens/fineweb-edu/train
+  val_path: data_cache/tokens/fineweb-edu/val
+  seq_len: 1024
