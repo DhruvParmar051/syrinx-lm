@@ -24,6 +24,9 @@ from syrinx.config import SyrinxConfig, load_config, num_parameters
 
 REQUIRED_FILES = ("train_config", "train_log", "eval", "parity", "contamination", "benchmarks")
 REQUIRED_TEXT = ("name", "summary", "intended_use", "hardware")
+DEFAULT_USAGE_PROMPT = "Once upon a time"
+SMALL_SUBSET = 100
+"""Contaminated subsets smaller than this (per benchmark) get a note that they are too small to read."""
 EXPERIMENT_KEYS = ("training", "eval", "parity", "contamination", "benchmarks")
 BENCHMARK_NAMES = {
     "hellaswag": "HellaSwag",
@@ -83,6 +86,8 @@ class Manifest:
     summary: str
     intended_use: str
     limitations: list[str]
+    usage_prompt: str = DEFAULT_USAGE_PROMPT
+    """Prompt in the usage snippet (manifest ``usage_prompt``); pick one in the training domain."""
 
 
 def load_manifest(path: Path) -> Manifest:
@@ -128,6 +133,7 @@ def load_manifest(path: Path) -> Manifest:
         summary=raw["summary"],
         intended_use=raw["intended_use"],
         limitations=list(raw.get("limitations") or []),
+        usage_prompt=str(raw.get("usage_prompt") or DEFAULT_USAGE_PROMPT),
         **paths,
     )
 
@@ -338,6 +344,23 @@ def _cell(subsets: dict[str, Any], metric: str, subset: str) -> str:
     return f"{fmt_pct(score['value'], score['stderr'])} (n={fmt_int(score['n'])})"
 
 
+def _contaminated_note(benchmarks: dict[str, Any]) -> list[str]:
+    """A note under the benchmark table when the contaminated subsets are too small to read
+    (largest below :data:`SMALL_SUBSET`); empty when there are none or they are large enough."""
+    sizes = [
+        bench["subsets"]["contaminated"][bench["headline"]]["n"] for bench in benchmarks.values()
+    ]
+    largest = max(sizes, default=0)
+    if largest == 0 or largest >= SMALL_SUBSET:
+        return []
+    note = (
+        f"The contaminated subsets are small ({fmt_int(sum(sizes))} examples in total, at most "
+        f"{fmt_int(largest)} per benchmark), so their scores have wide error bars and are not "
+        "evidence of leakage either way. Compare All with Clean instead."
+    )
+    return [note, ""]
+
+
 def render_card(manifest: Manifest, evidence: Evidence) -> str:
     """The card as Markdown with YAML front matter. Sections, in order: front matter, title and
     summary, Model details, Training, Our metrics, Benchmarks, Comparisons, How to use,
@@ -425,7 +448,8 @@ def render_card(manifest: Manifest, evidence: Evidence) -> str:
             f"| {BENCHMARK_NAMES[key]} | {metric} | {_cell(sub, metric, 'all')} | {_cell(sub, metric, 'clean')} | {_cell(sub, metric, 'contaminated')} | "
             f"{'n/a' if chance is None else fmt_pct(chance)} |"
         )
-    lines += ["", f"Sources: {x['benchmarks']} (scores), {x['contamination']} (contamination).", ""]
+    lines += ["", *_contaminated_note(b["benchmarks"])]
+    lines += [f"Sources: {x['benchmarks']} (scores), {x['contamination']} (contamination).", ""]
 
     lines += ["## Comparisons", ""]
     lines += [
@@ -444,7 +468,10 @@ def render_card(manifest: Manifest, evidence: Evidence) -> str:
         f'tok = AutoTokenizer.from_pretrained("{manifest.repo_id}")',
         f'model = AutoModelForCausalLM.from_pretrained("{manifest.repo_id}", dtype=torch.float32)',
         "# Training documents always followed <|endoftext|>, so start prompts with it.",
-        'ids = tok(tok.bos_token + "Once upon a time", return_tensors="pt")',
+        (
+            f"ids = tok(tok.bos_token + {json.dumps(manifest.usage_prompt, ensure_ascii=False)}, "
+            'return_tensors="pt")'
+        ),
         "out = model.generate(**ids)  # uses the shipped generation_config",
         "print(tok.decode(out[0], skip_special_tokens=True))",
         "```",

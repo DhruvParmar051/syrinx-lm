@@ -13,6 +13,7 @@ from syrinx.model_card import (
     DATASETS,
     Evidence,
     Manifest,
+    _contaminated_note,
     chance_levels,
     check_consistency,
     file_sha256,
@@ -543,3 +544,25 @@ def test_real_10m_evidence_is_consistent() -> None:
     card = render_card(manifest, evidence)
     assert "| 1.5641 | 4.78 | 0.5769 |" in card  # EXP-014
     assert "11,798,784" in card
+
+
+def test_usage_prompt_defaults_and_can_be_set(tmp_path: Path) -> None:
+    """The snippet's prompt comes from the manifest, so each model can show text in its domain."""
+    assert 'tok.bos_token + "Once upon a time"' in render_card(*_load(tmp_path / "a"))
+    card = render_card(*_load(tmp_path / "b", usage_prompt='The "water" cycle is'))
+    assert 'tok.bos_token + "The \\"water\\" cycle is", return_tensors="pt")' in card
+
+
+def test_small_contaminated_subsets_get_a_note(tmp_path: Path) -> None:
+    card = render_card(*_load(tmp_path))
+    assert "The contaminated subsets are small" in card and "at most 33 per benchmark" in card
+
+
+def _contaminated(n: int) -> dict:
+    return {"headline": "acc", "subsets": {"contaminated": {"acc": {"n": n}}}}
+
+
+@pytest.mark.parametrize(("sizes", "noted"), [((0, 0), False), ((3, 40), True), ((40, 100), False)])
+def test_contaminated_note_threshold(sizes: tuple[int, int], noted: bool) -> None:
+    benchmarks = {f"b{i}": _contaminated(n) for i, n in enumerate(sizes)}
+    assert bool(_contaminated_note(benchmarks)) is noted

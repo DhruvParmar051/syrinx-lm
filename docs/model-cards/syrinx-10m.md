@@ -63,6 +63,8 @@ lm-evaluation-harness 0.4.13, 0-shot, float32, `<|endoftext|>` prepended, on the
 | PIQA | acc_norm | 53.0% ± 1.2 (n=1,838) | 53.5% ± 1.2 (n=1,682) | 33.3% ± 27.2 (n=3) | 50.0% |
 | LAMBADA (OpenAI) | acc | 7.8% ± 0.4 (n=5,153) | 7.8% ± 0.4 (n=5,153) | n/a | n/a |
 
+The contaminated subsets are small (65 examples in total, at most 40 per benchmark), so their scores have wide error bars and are not evidence of leakage either way. Compare All with Clean instead.
+
 Sources: EXP-017 (scores), EXP-016 (contamination).
 
 ## Comparisons
