@@ -1,0 +1,34 @@
+# Model card manifest for syrinx-50m (scripts/make_model_card.py). Every number in the card is read
+# from the evidence files below; this file holds only paths and descriptive text.
+name: syrinx-50m
+repo_id: DhruvParmar051/syrinx-50m   # Hub repo for the usage snippet; set at release
+export_dir: exports/syrinx-50m
+train_config: experiments/50m-a-config.yaml   # the run's config (lr from EXP-013), not configs/syrinx-50m.yaml
+train_log: experiments/50m-a-train.txt
+eval: experiments/eval-50m-a-step3815-bf16-autocast.json
+parity: experiments/export-50m-a-step3815-parity.json
+contamination: experiments/contamination-2026-10-14.json
+benchmarks: experiments/benchmarks-50m-a.json
+benchmark_dir: data_cache/benchmarks
+experiments:
+  training: EXP-018
+  eval: EXP-019
+  parity: EXP-020
+  contamination: EXP-016
+  benchmarks: EXP-021
+datasets: [fineweb-edu]
+hardware: Apple M5 Pro laptop (20-core GPU, 48 GB unified memory), PyTorch MPS backend
+summary: >-
+  The middle Syrinx model: a decoder-only transformer trained from scratch on 1.0B tokens of FineWeb-Edu,
+  a corpus of educational web pages. It is the second of three models (10M, 50M, 125M) in a scaling
+  series, trained on one laptop.
+intended_use: >-
+  Studying a small language model trained end to end on one laptop, and continuing English text in an
+  educational register. It is a base model: it continues text and does not follow instructions.
+limitations:
+  - Base model, not instruction-tuned or safety-tuned; it does not answer questions reliably and its
+    continuations can be fluent but factually wrong or repetitive.
+  - Trained on 1.0B tokens of English educational web text only; other languages, code and specialised
+    domains are poorly covered.
+  - Inherits the biases and errors of web text; FineWeb-Edu's quality filter does not remove them.
+  - Benchmark scores are above chance but low, as expected at this size.
