@@ -12,7 +12,9 @@ byte), "Benchmarks" (all and clean subsets, with chance levels) and "Comparisons
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -139,30 +141,65 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+SEGMENT_HEADER = re.compile(r"^# (\d{4}-\d\d-\d\d \d\d:\d\d:\d\d) \|")
+TIMESTAMP = re.compile(r"^(?:# end )?(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)")
+
+
+def _segment_seconds(start: str, end: str) -> float:
+    # Log timestamps are local wall-clock time; both ends share a zone, so any fixed one gives
+    # the right difference (a DST change inside a segment would be off by an hour).
+    def parse(stamp: str) -> datetime:
+        return datetime.strptime(stamp, "%Y-%m-%d %H:%M:%S").replace(tzinfo=UTC)
+
+    return (parse(end) - parse(start)).total_seconds()
+
+
 def parse_train_log(path: Path) -> dict[str, float]:
-    """``{"end_step", "train_loss", "val_loss", "wall_seconds"}`` from a training log: the last line
-    starting with ``{"end_step"`` (train.py's summary) and the last ``real <seconds>`` line
-    (``/usr/bin/time -p``).
+    """``{"end_step", "train_loss", "val_loss", "wall_seconds", "segments"}`` from a training log.
+
+    The summary is the last line starting with ``{"end_step"`` (train.py's). A run that was stopped
+    and resumed has one segment per ``# <timestamp> |`` header line, and its wall time is the sum
+    over segments: the segment's ``real <seconds>`` line (``/usr/bin/time -p``) when it has one,
+    otherwise header to last timestamped line (a segment stopped by request has no ``real`` line).
+    A log without header lines is one segment timed by its last ``real`` line.
 
     Raises:
-        ValueError: If either line is missing.
+        ValueError: If the summary is missing, or a log without headers has no ``real`` line.
     """
     summary: dict[str, Any] | None = None
-    wall: float | None = None
+    segments: list[dict[str, Any]] = []
+    unsegmented_real: float | None = None
     for line in path.read_text(encoding="utf-8").splitlines():
         if line.startswith('{"end_step"'):
             summary = json.loads(line)
         elif line.startswith("real "):
-            wall = float(line.split()[1])
+            if segments:
+                segments[-1]["real"] = float(line.split()[1])
+            else:
+                unsegmented_real = float(line.split()[1])
+        elif header := SEGMENT_HEADER.match(line):
+            segments.append({"start": header[1], "end": header[1], "real": None})
+        elif segments and (stamp := TIMESTAMP.match(line)):
+            segments[-1]["end"] = stamp[1]
 
-    if summary is None or wall is None:
-        raise ValueError(f'{path}: no train summary line or no "real" timing line')
+    if summary is None:
+        raise ValueError(f"{path}: no train summary line")
+    if segments:
+        wall = sum(
+            s["real"] if s["real"] is not None else _segment_seconds(s["start"], s["end"])
+            for s in segments
+        )
+    elif unsegmented_real is not None:
+        wall = unsegmented_real
+    else:
+        raise ValueError(f'{path}: no "# <timestamp> |" segment headers and no "real" timing line')
 
     return {
         "end_step": summary["end_step"],
         "train_loss": summary["train_loss"],
         "val_loss": summary["val_loss"],
         "wall_seconds": wall,
+        "segments": max(len(segments), 1),
     }
 
 
@@ -274,6 +311,14 @@ def fmt_int(x: float) -> str:
     return f"{int(x):,}"
 
 
+def fmt_wall(train: dict[str, float]) -> str:
+    hours = f"{train['wall_seconds'] / 3600:.2f} h"
+    n = int(train["segments"])
+    if n == 1:
+        return hours
+    return f"{hours} in {n} segments (stopped and resumed; includes steps re-run after each resume)"
+
+
 def fmt_pct(value: float, stderr: float | None = None) -> str:
     """Percent with 1 decimal, and ``± stderr`` in percentage points if given."""
     text = f"{100 * value:.1f}%"
@@ -338,7 +383,7 @@ def render_card(manifest: Manifest, evidence: Evidence) -> str:
         f"| Optimizer | AdamW, peak LR {cfg.train.lr:g}, min LR {cfg.train.min_lr:g}, {cfg.train.warmup_steps} warmup steps, cosine decay, weight decay {cfg.train.weight_decay:g} |",
         f"| Precision | {cfg.train.precision} |",
         f"| Hardware | {manifest.hardware} |",
-        f"| Wall time | {t['wall_seconds'] / 3600:.2f} h |",
+        f"| Wall time | {fmt_wall(t)} |",
         f"| Final train / val loss | {fmt_loss(t['train_loss'])} / {fmt_loss(t['val_loss'])} (val: training-time estimate) |",
         "",
         f"Source: {x['training']}.",

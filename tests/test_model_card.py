@@ -20,6 +20,7 @@ from syrinx.model_card import (
     fmt_loss,
     fmt_pct,
     fmt_ppl,
+    fmt_wall,
     load_evidence,
     load_manifest,
     parse_train_log,
@@ -234,13 +235,60 @@ def test_parse_train_log_uses_last_summary(tmp_path: Path) -> None:
         "train_loss": 1.432109,
         "val_loss": 1.876543,
         "wall_seconds": 7777.25,
+        "segments": 1,
     }
+
+
+SUMMARY = '{"end_step": 30, "train_loss": 2.0, "val_loss": 2.5}'
+
+
+def test_parse_train_log_sums_resumed_segments(tmp_path: Path) -> None:
+    """A run stopped twice by request (no "real" line) and finished once: every segment counts,
+    not only the last one."""
+    path = tmp_path / "train.txt"
+    path.write_text(
+        "# 2026-10-14 10:00:00 | git abc | AC | train attempt 1: --out-dir runs/x\n"
+        "2026-10-14 10:00:01 INFO    __main__: step 10 loss 5.0\n"
+        "2026-10-14 11:00:00 INFO    __main__: step 20 loss 4.0\n"
+        "# 2026-10-15 09:00:00 | git abc | AC | train attempt 1: --resume\n"
+        "2026-10-15 09:30:00 INFO    __main__: step 20 loss 4.0\n"
+        "# 2026-10-16 09:00:00 | git abc | AC | train attempt 1: --resume\n"
+        "2026-10-16 09:10:00 INFO    __main__: step 30 loss 2.0\n"
+        f"{SUMMARY}\n"
+        "real 700.50\n"
+        "exit 0\n",
+        encoding="utf-8",
+    )
+    train = parse_train_log(path)
+    assert train["segments"] == 3
+    assert train["wall_seconds"] == pytest.approx(3600 + 1800 + 700.5)
+
+
+def test_parse_train_log_single_segment_prefers_real_line(tmp_path: Path) -> None:
+    """The 10m log layout: one header, a "real" line, then "# end <timestamp>"."""
+    path = tmp_path / "train.txt"
+    path.write_text(
+        "# 2026-10-12 21:59:12 | git 6c8739d | AC\n# command: train.py\n"
+        f"2026-10-12 22:00:00 INFO step 10\n{SUMMARY}\nreal 8940.55\n"
+        "# end 2026-10-13 00:28:13 | AC\n",
+        encoding="utf-8",
+    )
+    assert parse_train_log(path)["wall_seconds"] == 8940.55
+    assert parse_train_log(path)["segments"] == 1
+
+
+def test_resumed_wall_time_is_labelled_in_card() -> None:
+    assert fmt_wall({"wall_seconds": 7200.0, "segments": 1}) == "2.00 h"
+    assert fmt_wall({"wall_seconds": 75504.0, "segments": 8}).startswith("20.97 h in 8 segments")
 
 
 def test_parse_train_log_missing_lines(tmp_path: Path) -> None:
     path = tmp_path / "log.txt"
     path.write_text('{"end_step": 1, "train_loss": 1, "val_loss": 1}\n', encoding="utf-8")
     with pytest.raises(ValueError, match="real"):
+        parse_train_log(path)
+    path.write_text("2026-10-12 22:00:00 INFO step 10\nreal 5.0\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="summary"):
         parse_train_log(path)
 
 
