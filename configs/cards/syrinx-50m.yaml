@@ -17,6 +17,7 @@ experiments:
   contamination: EXP-016
   benchmarks: EXP-021
 datasets: [fineweb-edu]
+usage_prompt: The water cycle is   # in the training domain (educational web text)
 hardware: Apple M5 Pro laptop (20-core GPU, 48 GB unified memory), PyTorch MPS backend
 summary: >-
   The middle Syrinx model: a decoder-only transformer trained from scratch on 1.0B tokens of FineWeb-Edu,
