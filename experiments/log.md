@@ -732,3 +732,33 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
 - Caveats: parity uses random ids; generation was checked on one prompt and one seed. The first command
   attempt failed before running (a shell quoting error, exit 127) and wrote nothing; its log lines were removed.
 
+## EXP-021 — Benchmarks for the 50M model, overall and on clean examples (Phase 8)
+- Date: 2026-10-30
+- Git SHA: ee9be1e (tracked files clean apart from run logs)
+- Model: `exports/syrinx-50m` (EXP-020; the 50M model of EXP-018, step 3815)
+- Command: `uv run python scripts/run_benchmarks.py --model-dir exports/syrinx-50m --out
+  experiments/benchmarks-50m-a.json` (settings as EXP-017: lm-eval 0.4.13, local task configs, 0-shot,
+  fp32, `add_bos_token=True`, batch size 32, MPS, offline)
+- Raw output: [`benchmarks-50m-a.json`](benchmarks-50m-a.json), [`benchmarks-50m-a.txt`](benchmarks-50m-a.txt)
+- Hardware state: AC power
+- Contamination labels: EXP-016, which scanned all 26 FineWeb-Edu train shards; this model saw 1.0B of
+  their 2.5B tokens, so the flagged set is a superset of what it could have seen.
+- Metrics (source: the JSON file; ± is the binomial standard error; chance as in EXP-017):
+
+  | benchmark | metric | all (n) | clean (n) | chance | 10m all (EXP-017) |
+  |---|---|---|---|---|---|
+  | HellaSwag | acc_norm | 0.2812 ± 0.0045 (10,042) | 0.2809 (10,002) | 0.25 | 0.2586 |
+  | ARC-Easy | acc | 0.4722 ± 0.0102 (2,376) | 0.4701 (2,278) | 0.2502 | 0.2698 |
+  | PIQA | acc_norm | 0.5919 ± 0.0115 (1,838) | 0.5981 (1,682) | 0.5 | 0.5305 |
+  | LAMBADA | acc | 0.1861 ± 0.0054 (5,153) | 0.1861 (5,153) | ~0 | 0.0778 |
+  | LAMBADA | perplexity | 366.1 | 366.1 | | 75,330 |
+
+- Time: 155.2 s harness time (156.9 s wall), against an estimate of 6-9 min scaled from EXP-017 by
+  compute per token; the 10m run's time was mostly fixed cost, so the scaling overestimated.
+- Observations: every benchmark is above chance, by 6.9 SE (HellaSwag) to 21.8 SE (ARC-Easy); the
+  largest gain over the 10m model is ARC-Easy (+0.20), consistent with FineWeb-Edu's educational text.
+  Clean-subset scores are within 0.007 of the full-set scores. The 10m vs 50m comparison uses the same
+  tasks, prompts and scoring, but the two models differ in training data as well as size, so the gap
+  is not a pure scaling effect.
+- Caveats: one model, one run, 0-shot; comparable only to runs with the same task configs
+  (`task_config_sha256`). Not comparable with published scores of other models.
