@@ -20,7 +20,7 @@ added back into the residual stream; the LM head shares its weights with the emb
 | Model | Data | Status |
 |---|---|---|
 | [syrinx-10m](https://huggingface.co/DhruvParmar051/syrinx-10m) | TinyStories, 295M tokens | **Released** on Hugging Face |
-| syrinx-50m | FineWeb-Edu, 1.0B tokens | Training (step 750 of 3,815) |
+| syrinx-50m | FineWeb-Edu, 1.0B tokens | **Trained**: val loss 3.3206, 1.0775 bits per byte; HF export and benchmarks done, release next |
 | syrinx-125m | FineWeb-Edu, 2.5B tokens | Next |
 
 ![Training and validation loss of the 10m and 50m runs](docs/figures/loss-curves.png)
