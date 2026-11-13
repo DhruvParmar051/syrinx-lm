@@ -18,6 +18,7 @@ with CUDA 12.8 or newer; step 1 checks that the GPU actually runs a kernel.
 - [ ] Decide what moves: the token shards are 4.7 GB (`data_cache/tokens/fineweb-edu/train`),
       plus 23 MB val and the 2.2 MB tokenizer (`tokenizer/syrinx-bpe-32k`). Copying them is
       faster than rebuilding them; rebuilding needs `scripts/build_shards.py` and a dataset download.
+      Step 6 also needs the final 50M checkpoint (`runs/50m-a/checkpoints/step_0003815.pt`, 611 MB).
 - [ ] Note the commit: `git rev-parse --short HEAD`.
 
 ## 1. Environment
@@ -94,10 +95,11 @@ Run step 4 with `--stop-at-step 15` first, then this to finish at 30, in a fresh
 
 ## 6. Same checkpoint, same answer on both machines
 
-Evaluate one existing Mac checkpoint on both devices with the same settings:
+Evaluate the final 50M checkpoint (the only one kept; copy it to the GPU machine) on both devices
+with the same settings:
 
 ```bash
-uv run python scripts/eval_checkpoint.py --checkpoint <50m step_0001250.pt> \
+uv run python scripts/eval_checkpoint.py --checkpoint runs/50m-a/checkpoints/step_0003815.pt \
     --precision bf16-autocast --max-batches 50 --device cuda --out experiments/parity-cuda.json
 ```
 Run the same command on the Mac with `--device mps`.
