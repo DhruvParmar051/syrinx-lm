@@ -66,32 +66,38 @@ uv run python scripts/estimate_memory.py configs/syrinx-125m.yaml --micro-batch 
 - [ ] Estimates (2026-10-16, `estimate_memory.py`, x1.25 margin): micro-batch 8 -> 16.4 GiB,
       32 -> 57.7 GiB, 64 -> 112.8 GiB. So micro-batch 32 with `grad_accum_steps: 16`
       (32 x 16 x 1024 = 524,288) is the candidate on both 80 GB and 96 GB; 64 does not fit either.
-- [ ] Make a scratch copy of the config with those two values. Do not edit
-      `configs/syrinx-125m.yaml`: the Mac runs still use it.
+      An H200 (141 GB) also fits micro-batch 64; keep 32 x 16 for the first run unless step 7
+      shows it is worth changing.
+- [ ] Use `configs/syrinx-125m-cluster.yaml`, which has those two values and is otherwise
+      `configs/syrinx-125m.yaml` (the Mac config stays as it is).
 
 ## 4. Short run: does it train?
 
 ```bash
-uv run python scripts/train.py --config <scratch-125m-mb32.yaml> --out-dir runs/cuda-dryrun \
+uv run python scripts/train.py --config configs/syrinx-125m-cluster.yaml --out-dir runs/cuda-dryrun \
     --device cuda --stop-at-step 30 --log-interval 1 --eval-interval 30 --eval-batches 20 \
     --ckpt-interval 15 --keep-last 2
 ```
 - [ ] Step-1 loss within 0.15 of ln(32768) = 10.40 (the `test_initial_loss_near_log_vocab`
       tolerance).
 - [ ] Loss falls over the 30 steps; grad norm finite on every step.
+- [ ] `uv run python scripts/check_dryrun.py start runs/cuda-dryrun/metrics.jsonl` checks these three.
 - [ ] `mem_peak` in `metrics.jsonl` is at or under the 57.7 GiB estimate plus 25%; record the gap.
 - [ ] The log says `Using device cuda`.
 
 ## 5. Resume on CUDA
 
 ```bash
-uv run python scripts/train.py --config <scratch-125m-mb32.yaml> --out-dir runs/cuda-dryrun \
+uv run python scripts/train.py --config configs/syrinx-125m-cluster.yaml --out-dir runs/cuda-dryrun \
     --device cuda --resume --stop-at-step 30 --log-interval 1 --eval-interval 30 \
     --eval-batches 20 --ckpt-interval 15 --keep-last 2
 ```
 Run step 4 with `--stop-at-step 15` first, then this to finish at 30, in a fresh out-dir.
 - [ ] Pass: steps 16-30 match a straight 30-step run within run-to-run noise (EXP-011 is
       the MPS comparison for how much noise to expect).
+- [ ] `uv run python scripts/check_dryrun.py resume runs/cuda-dryrun/metrics.jsonl
+      <resumed run>/metrics.jsonl --noise <repeat run>/metrics.jsonl` reports the largest loss
+      difference against a second straight run (the noise floor) and fails above 1e-3.
 
 ## 6. Same checkpoint, same answer on both machines
 
@@ -102,14 +108,14 @@ with the same settings:
 uv run python scripts/eval_checkpoint.py --checkpoint runs/50m-a/checkpoints/step_0003815.pt \
     --precision bf16-autocast --max-batches 50 --device cuda --out experiments/parity-cuda.json
 ```
-Run the same command on the Mac with `--device mps`.
+Run the same command on the Mac with `--device mps` (done 2026-11-14: 3.29666).
 - [ ] Pass: val loss agrees to within 1e-2 (bf16 tolerance). A larger gap means the two
       backends compute different things, and nothing trained on one can be compared with the other.
 
 ## 7. Throughput
 
 ```bash
-uv run python scripts/train.py --config <scratch-125m-mb32.yaml> --out-dir runs/cuda-bench \
+uv run python scripts/train.py --config configs/syrinx-125m-cluster.yaml --out-dir runs/cuda-bench \
     --device cuda --stop-at-step 300 --log-interval 10 --eval-interval 300 --eval-batches 20 \
     --ckpt-interval 300 --keep-last 1
 uv run python scripts/throughput_report.py runs/cuda-bench/metrics.jsonl --window-minutes 5
