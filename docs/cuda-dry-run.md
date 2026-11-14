@@ -24,7 +24,7 @@ with CUDA 12.8 or newer; step 1 checks that the GPU actually runs a kernel.
 ## 1. Environment
 
 ```bash
-git clone https://github.com/DhruvParmar051/syrinx-lm.git && cd syrinx-lm
+git clone https://github.com/DhruvParmar051/syrinx-lm.git && cd syrinx-lm   # or copy `git ls-files` from the Mac if the machine has no git
 uv sync --all-extras
 uv run python -c "import torch; print(torch.__version__, torch.version.cuda, torch.cuda.is_available(), torch.cuda.get_device_name(0))"
 ```
