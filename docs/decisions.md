@@ -283,5 +283,35 @@ usually shows up during warmup already, but the ranking of close runs is less ce
 **Revisit if:** Gate 6a stops the pipeline; the best LR is again an end of the range; or the sweep's
 top two are within the 0.01 tie band, where a longer comparison would be worth its cost.
 
+## 2026-11-14 — Train the 125M model on one college-cluster GPU
+**Context:** Gate 6a's planning numbers put the 125M run at ~4.3 days on the Mac (EXP-000 proxy, 6,674
+tok/s; PLAN.md says plan on 5-7 days), and the 50M run showed that a multi-day laptop run gets
+interrupted (EXP-018: eight segments over two weeks, half speed on battery). The college GPU cluster
+offers a full NVIDIA RTX PRO 6000 (96 GB) through Slurm, and an H200 (141 GB) node when it is not
+drained. The code was written device-agnostic but has only run on MPS and CPU.
+**Decision:**
+- **The 125M model trains on one cluster GPU**: the RTX PRO 6000 partition, or the H200 if `sinfo`
+  shows it usable. The 10m and 50M models stay as trained, on the Mac.
+- **Same tokens per step as planned:** micro-batch 32 x accumulation 16 = 524,288
+  (`configs/syrinx-125m-cluster.yaml`; 57.7 GiB estimated with the x1.25 margin). Everything else in
+  `configs/syrinx-125m.yaml` is unchanged, and the LR sweep of the 2026-10-15 entry still applies.
+- **No 125M training before the CUDA dry run passes** (`docs/cuda-dry-run.md`), including the cross-device check: the final 50M checkpoint must
+  give the same val loss on CUDA as on MPS within 1e-2 (Mac reference:
+  [`parity-mps-2026-11-14.json`](../experiments/parity-mps-2026-11-14.json)).
+- **Gate 6a's Mac thresholds do not apply on the GPU.** Its question (is the full 2.5B-token budget
+  affordable?) is answered by the dry run's measured throughput instead.
+- **Wording:** "trained on a single local device" stays true for syrinx-10m and syrinx-50m only. The
+  README, the 125M model card and any post must say the 125M model was trained on a single NVIDIA GPU
+  of a university cluster, and name the GPU. The README intro ("scaled ... on a single laptop") changes
+  when the 125M run starts.
+**Why:** the run takes hours instead of most of a week, and nothing else about the model changes, so the
+three sizes stay comparable except for the hardware line. The dry run protects the claim that the
+same code, not a CUDA variant of it, trained all three.
+**Caveats:** bf16 kernels differ between MPS and CUDA, so the 125M run is not bit-reproducible on the
+Mac; the cross-device check bounds the difference instead. The cluster is shared and `/tmp/$USER` is
+not backed up: checkpoints and logs are copied back to the Mac after each job.
+**Revisit if:** the dry run fails a step that needs code changes beyond the known gaps, or cluster time
+is not available for a run of this length.
+
 ## Open (not yet decided)
 - Nothing open for Phase 6; see the 2026-10-15 entry.

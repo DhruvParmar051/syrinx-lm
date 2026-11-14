@@ -1,0 +1,7 @@
+# 2026-11-14 20:45:59 | git 2a6b2ed | Now drawing from 'Battery Power' | cuda-dry-run step 6, Mac reference
+2026-11-14 20:46:00 INFO    syrinx.utils.device: Using device mps (from argument)
+{"checkpoint": "runs/50m-a/checkpoints/step_0003815.pt", "step": 3815, "val_path": "data_cache/tokens/fineweb-edu/val", "seq_len": 1024, "batch_size": 16, "precision": "bf16-autocast", "max_batches": 50, "windows": 800, "tokens": 819200, "bytes": 3679510, "eos_targets": 857, "loss": 3.296662645339966, "perplexity": 27.022305250402106, "bpb": 1.0588855021051913, "seconds": 19.299874250005814, "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"}
+real 21.27
+user 1.70
+sys 0.81
+exit 0
