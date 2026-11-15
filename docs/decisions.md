@@ -313,5 +313,28 @@ not backed up: checkpoints and logs are copied back to the Mac after each job.
 **Revisit if:** the dry run fails a step that needs code changes beyond the known gaps, or cluster time
 is not available for a run of this length.
 
+## 2026-11-15 — Run the 125M sweep and full run unattended, with 600-step sweep runs
+**Context:** the CUDA dry run passed on the RTX PRO 6000 (EXP-022): resume matches within 6.8e-5, the
+50M checkpoint gives the same val loss as on the Mac within 1.1e-5, and 125M training takes about
+3.55 s per 524,288-token step at 31.5 GiB peak. The cluster is reachable only from the campus
+network, so the run must finish without anyone watching it.
+**Decision:**
+- **One Slurm job does all of Phase 6's GPU work:** the LR sweep, the pick (same rule and script as
+  Phase 5), the full 4,769-step run, the full-split eval, and a copy of the final checkpoint, metrics
+  and logs from gpunode1's `/tmp` to the home directory. Each stage skips itself when its output
+  exists and training resumes from the newest checkpoint, so resubmitting the job continues it. The
+  newest checkpoint is also copied to home every 30 minutes while the run trains.
+- **Sweep runs are 600 steps, not 300:** 300 warmup steps plus 300 at peak LR, which removes the
+  2026-10-15 caveat (runs compared the moment they reach peak). Same three LRs (1.2e-3, 6e-4, 2.4e-3),
+  compared on val loss at step 600. About 35 min per run on this GPU.
+- **Micro-batch stays 32 x accumulation 16.** Micro-batch 64 would fit in memory, but it has not run
+  on CUDA, and an untested setting is not worth a possible failure with no one there to fix it.
+- **Export, benchmarks and the model card run on the Mac** afterwards (the GPU node cannot download
+  the benchmark data).
+**Why:** the whole job takes about 7 h of GPU time (estimate from the dry run's step time), so a
+longer sweep costs about 1 h more and makes the LR choice firmer.
+**Revisit if:** the sweep picks an end of the range (1.2e-3 is the middle; 2.4e-3 winning means the
+range should go higher), or the job stops at any stage.
+
 ## Open (not yet decided)
 - Nothing open for Phase 6; see the 2026-10-15 entry.
