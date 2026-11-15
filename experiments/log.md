@@ -799,3 +799,38 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   on (each step stops the job on a non-zero exit), but its test counts were not kept. Step 5 shows
   resume works over 30 steps at a very low LR (6e-05 at step 30); it says nothing about longer runs,
   where GPU non-determinism makes runs with the same seed drift apart (seen in the 125M run).
+
+## EXP-023 — 125M export, automatic upload and check of the Hub copy (Phase 9)
+- Date: 2026-11-15
+- Export and upload: unattended on the cluster after the 125M run (EXP-025): `export125m.sbatch`
+  (Slurm job 944, CPU, gpunode1) ran `scripts/export_hf.py` on the final checkpoint (step 4769) and wrote a
+  short preview README from the run's files; a login-node script uploaded the folder to
+  `DhruvParmar051/syrinx-125m`, created **private**. Hub commit 942787eb63, 2026-11-15 11:54:51 UTC
+  (17:24 IST). The uploader's own log (`experiments/upload-125m-2026-11-15.txt`) is still on the cluster.
+- Raw output: [`export-125m-a-step4769-parity.json`](export-125m-a-step4769-parity.json) (the uploaded
+  `parity.json`), [`hub-check-125m-2026-11-15.txt`](hub-check-125m-2026-11-15.txt) (this check, on the Mac)
+- Parity (cluster): max logit difference 0.0 against our model (tolerance 1e-4), tokenizer ok, passed;
+  fp32, CPU, 2 x 1024 random ids. The file holds relative paths only.
+- Hub check (Mac, from the private repo): all 8 files present; `model.safetensors` (497,114,056 bytes)
+  sha256 29dfaf45d1c5... matches the Hub's LFS hash, the other 7 match by size. Loaded with
+  `AutoModelForCausalLM` / `AutoTokenizer` (transformers 5.17.0): 124,275,456 parameters, as the config.
+- Generation (HF only, seed 0, top-p 0.9, 60 new tokens; full text in the check file): fluent, on-topic
+  educational prose; facts are often wrong (Columbus "landed in what is now Belize" and an invented
+  explorer; photosynthesis "takes place in the absence of oxygen").
+- Cross-device check of the val loss (Mac, MPS): the downloaded HF model on the full val split, with
+  the same windows, loss and byte counting as `scripts/eval_checkpoint.py` (`val_batches` +
+  `evaluate_split`; only the model differs; a scratch script, not in the repo), fp32, batch 16:
+  loss **3.02780**, perplexity 20.652, 0.98247 bits per byte, 12,215,296 tokens, 1,084 s
+  ([`hf-eval-125m-full-fp32-mps-2026-11-15.json`](hf-eval-125m-full-fp32-mps-2026-11-15.json)).
+  The cluster's bf16 figure in the preview README is 3.0280 (0.9825 bpb, same token count): the gap
+  (about 2e-4) is the size of the fp32/bf16 gap on the 50M full split (1.4e-4, EXP-019).
+- HF + bf16 autocast on MPS is wrong: the same script on the 50M export, first 50 batches, gives 3.29649
+  in fp32 but **3.69687** under `torch.autocast("mps", bfloat16)`, against our own model's 3.29666 in bf16
+  ([`hf-eval-50m-50b-*-mps-2026-11-15.json`](hf-eval-50m-50b-fp32-mps-2026-11-15.json)). Cause: in
+  transformers 5.17.0 `LlamaRotaryEmbedding.forward` disables autocast for device type "cpu" when the
+  tensor is on MPS (`modeling_llama.py` line 119), so the rotary angles are computed in bf16 and lose
+  precision at large positions. It affects only users who wrap the HF model in an MPS autocast; fp32
+  (the benchmarks, EXP-024) and our own model are unaffected. Not checked: CUDA autocast, and loading the
+  model with `dtype=torch.bfloat16`.
+- Caveats: the preview README is not the model card; the card (`configs/cards/syrinx-125m.yaml`) needs
+  the training log, config and eval file from the cluster. The repo stays private until it is generated.

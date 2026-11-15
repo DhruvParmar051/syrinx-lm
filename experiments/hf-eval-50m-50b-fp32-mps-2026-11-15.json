@@ -1,0 +1,18 @@
+{
+  "model_dir": "exports/syrinx-50m",
+  "device": "mps",
+  "val_path": "data_cache/tokens/fineweb-edu/val",
+  "seq_len": 1024,
+  "batch_size": 16,
+  "precision": "fp32",
+  "max_batches": 50,
+  "windows": 800,
+  "tokens": 819200,
+  "bytes": 3679510,
+  "eos_targets": 857,
+  "loss": 3.2964909887313842,
+  "perplexity": 27.01766709122349,
+  "bpb": 1.0588303661347502,
+  "seconds": 33.45194695799728,
+  "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"
+}

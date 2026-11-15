@@ -1,0 +1,13 @@
+{
+  "checkpoint": "../syrinx-lm-results/125m-a/checkpoint/checkpoint.pt",
+  "step": 4769,
+  "out_dir": "../syrinx-lm-results/125m-a/export",
+  "transformers_version": "5.17.0",
+  "batch": 2,
+  "seq_len": 1024,
+  "max_abs_logit_diff": 0.0,
+  "tolerance": 0.0001,
+  "logits_ok": true,
+  "tokenizer_ok": true,
+  "passed": true
+}

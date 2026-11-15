@@ -1,0 +1,23 @@
+# 2026-11-15 17:52:24 | git 0c1ebfa | Now drawing from 'Battery Power'
+# check of DhruvParmar051/syrinx-125m (private) as downloaded to exports/syrinx-125m; generation on CPU, fp32
+hub commit 942787eb63d5e648df05224e23029ea71a0a8dec private=True last_modified=2026-11-15 11:54:51+00:00
+commit 942787eb63 2026-11-15 11:54:51+00:00 Upload syrinx-125m (step 4769, preview)
+commit e9de35839d 2026-11-15 11:53:59+00:00 initial commit
+.gitattributes: 1519 bytes match (size)
+README.md: 1762 bytes match (size)
+config.json: 721 bytes match (size)
+generation_config.json: 182 bytes match (size)
+model.safetensors: sha256 29dfaf45d1c5132c770a8b598108f11612044ccd569e2a3db9f43c6240ad495d match
+parity.json: 326 bytes match (size)
+tokenizer.json: 2328862 bytes match (size)
+tokenizer_config.json: 231 bytes match (size)
+transformers 5.17.0, torch 2.14.0
+parameters (unique tensors): 124,275,456
+--- prompt 'The water cycle is' (seed 0, top_p 0.9, 60 new tokens)
+The water cycle is a complicated process and requires a large amount of energy and energy to operate.
+Water travels through the atmosphere at the rate of about 100 km/h, so a lot of energy is lost through evaporation and transpiration. However, during the course of a day, the energy of the
+--- prompt 'Photosynthesis is the process by which' (seed 0, top_p 0.9, 60 new tokens)
+Photosynthesis is the process by which plants absorb energy from sunlight. The process takes place in the absence of oxygen. This means that plants have no need to use oxygen in the form of water to make food. However, in photosynthesis, the amount of water required to produce a given amount of food is limited. This means that the plant
+--- prompt 'In 1492, Christopher Columbus' (seed 0, top_p 0.9, 60 new tokens)
+In 1492, Christopher Columbus landed in what is now Belize. The next year, he led the expedition of the Spanish explorer Pedro Narciso de Vega (1502-1506).
+In 1493, Christopher Columbus sailed along the coast of South America and reached the Caribbean Sea
