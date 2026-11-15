@@ -1,0 +1,205 @@
+.....                                                                    [100%]
+5 passed, 5 deselected in 2.08s
+# 2026-11-15 10:16:59 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 3. memory estimate
+micro-batch 32, seq_len 1024, precision bf16-autocast
+syrinx-125m: 124,275,456 parameters
+component             GiB
+params               0.46
+grads                0.46
+optimizer            0.93
+autocast_copies      0.23
+activations         30.09
+logits              14.00
+subtotal            46.18
+total x1.25         57.72
+FLOPs/token 8.589e+08; tokens 2.500e+09; train FLOPs 2.148e+18
+real 0.89
+user 7.20
+sys 0.13
+exit 0
+# 2026-11-15 10:17:00 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 4. 30 steps
+2026-11-15 10:17:01 INFO    syrinx.utils.device: Using device cuda (from argument)
+2026-11-15 10:17:06 INFO    __main__: step 1 loss 10.5329 lr 2.00e-06
+2026-11-15 10:17:09 INFO    __main__: step 2 loss 10.4883 lr 4.00e-06
+2026-11-15 10:17:13 INFO    __main__: step 3 loss 10.3956 lr 6.00e-06
+2026-11-15 10:17:17 INFO    __main__: step 4 loss 10.2563 lr 8.00e-06
+2026-11-15 10:17:20 INFO    __main__: step 5 loss 10.0772 lr 1.00e-05
+2026-11-15 10:17:24 INFO    __main__: step 6 loss 9.8973 lr 1.20e-05
+2026-11-15 10:17:27 INFO    __main__: step 7 loss 9.7055 lr 1.40e-05
+2026-11-15 10:17:31 INFO    __main__: step 8 loss 9.5544 lr 1.60e-05
+2026-11-15 10:17:34 INFO    __main__: step 9 loss 9.4431 lr 1.80e-05
+2026-11-15 10:17:38 INFO    __main__: step 10 loss 9.3619 lr 2.00e-05
+2026-11-15 10:17:41 INFO    __main__: step 11 loss 9.2954 lr 2.20e-05
+2026-11-15 10:17:45 INFO    __main__: step 12 loss 9.2349 lr 2.40e-05
+2026-11-15 10:17:49 INFO    __main__: step 13 loss 9.1796 lr 2.60e-05
+2026-11-15 10:17:52 INFO    __main__: step 14 loss 9.1517 lr 2.80e-05
+2026-11-15 10:17:56 INFO    __main__: step 15 loss 9.1134 lr 3.00e-05
+2026-11-15 10:18:00 INFO    __main__: step 16 loss 9.0712 lr 3.20e-05
+2026-11-15 10:18:03 INFO    __main__: step 17 loss 9.0358 lr 3.40e-05
+2026-11-15 10:18:07 INFO    __main__: step 18 loss 8.9898 lr 3.60e-05
+2026-11-15 10:18:10 INFO    __main__: step 19 loss 8.9546 lr 3.80e-05
+2026-11-15 10:18:14 INFO    __main__: step 20 loss 8.8806 lr 4.00e-05
+2026-11-15 10:18:18 INFO    __main__: step 21 loss 8.8235 lr 4.20e-05
+2026-11-15 10:18:21 INFO    __main__: step 22 loss 8.7829 lr 4.40e-05
+2026-11-15 10:18:25 INFO    __main__: step 23 loss 8.7277 lr 4.60e-05
+2026-11-15 10:18:28 INFO    __main__: step 24 loss 8.6331 lr 4.80e-05
+2026-11-15 10:18:32 INFO    __main__: step 25 loss 8.5740 lr 5.00e-05
+2026-11-15 10:18:35 INFO    __main__: step 26 loss 8.5266 lr 5.20e-05
+2026-11-15 10:18:39 INFO    __main__: step 27 loss 8.4728 lr 5.40e-05
+2026-11-15 10:18:43 INFO    __main__: step 28 loss 8.3918 lr 5.60e-05
+2026-11-15 10:18:46 INFO    __main__: step 29 loss 8.3638 lr 5.80e-05
+2026-11-15 10:18:50 INFO    __main__: step 30 loss 8.3140 lr 6.00e-05
+2026-11-15 10:18:51 INFO    __main__: step 30 val_loss 8.2179
+{"end_step": 30, "out_dir": "runs/cuda-dryrun", "start_step": 0, "train_loss": 8.31397533416748, "val_loss": 8.217919635772706}
+real 112.30
+user 88.75
+sys 32.66
+exit 0
+# 2026-11-15 10:18:52 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 4. check
+{"metrics": "runs/cuda-dryrun/metrics.jsonl", "first_step": 1, "first_loss": 10.532851219177246, "expected_initial_loss": 10.39720770839918, "last_step": 30, "last_loss": 8.31397533416748, "max_mem_peak_gib": 31.49407386779785, "initial_loss_ok": true, "loss_falls": true, "all_finite": true, "passed": true}
+real 1.00
+user 7.18
+sys 0.13
+exit 0
+# 2026-11-15 10:18:53 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 5a. straight repeat (noise floor)
+2026-11-15 10:18:54 INFO    syrinx.utils.device: Using device cuda (from argument)
+2026-11-15 10:18:59 INFO    __main__: step 1 loss 10.5329 lr 2.00e-06
+2026-11-15 10:19:03 INFO    __main__: step 2 loss 10.4883 lr 4.00e-06
+2026-11-15 10:19:06 INFO    __main__: step 3 loss 10.3956 lr 6.00e-06
+2026-11-15 10:19:10 INFO    __main__: step 4 loss 10.2563 lr 8.00e-06
+2026-11-15 10:19:13 INFO    __main__: step 5 loss 10.0772 lr 1.00e-05
+2026-11-15 10:19:17 INFO    __main__: step 6 loss 9.8973 lr 1.20e-05
+2026-11-15 10:19:20 INFO    __main__: step 7 loss 9.7055 lr 1.40e-05
+2026-11-15 10:19:24 INFO    __main__: step 8 loss 9.5545 lr 1.60e-05
+2026-11-15 10:19:28 INFO    __main__: step 9 loss 9.4431 lr 1.80e-05
+2026-11-15 10:19:31 INFO    __main__: step 10 loss 9.3619 lr 2.00e-05
+2026-11-15 10:19:35 INFO    __main__: step 11 loss 9.2954 lr 2.20e-05
+2026-11-15 10:19:38 INFO    __main__: step 12 loss 9.2349 lr 2.40e-05
+2026-11-15 10:19:42 INFO    __main__: step 13 loss 9.1796 lr 2.60e-05
+2026-11-15 10:19:45 INFO    __main__: step 14 loss 9.1517 lr 2.80e-05
+2026-11-15 10:19:49 INFO    __main__: step 15 loss 9.1134 lr 3.00e-05
+2026-11-15 10:19:53 INFO    __main__: step 16 loss 9.0712 lr 3.20e-05
+2026-11-15 10:19:56 INFO    __main__: step 17 loss 9.0358 lr 3.40e-05
+2026-11-15 10:20:00 INFO    __main__: step 18 loss 8.9898 lr 3.60e-05
+2026-11-15 10:20:04 INFO    __main__: step 19 loss 8.9546 lr 3.80e-05
+2026-11-15 10:20:07 INFO    __main__: step 20 loss 8.8806 lr 4.00e-05
+2026-11-15 10:20:11 INFO    __main__: step 21 loss 8.8235 lr 4.20e-05
+2026-11-15 10:20:14 INFO    __main__: step 22 loss 8.7829 lr 4.40e-05
+2026-11-15 10:20:18 INFO    __main__: step 23 loss 8.7277 lr 4.60e-05
+2026-11-15 10:20:21 INFO    __main__: step 24 loss 8.6331 lr 4.80e-05
+2026-11-15 10:20:25 INFO    __main__: step 25 loss 8.5739 lr 5.00e-05
+2026-11-15 10:20:28 INFO    __main__: step 26 loss 8.5266 lr 5.20e-05
+2026-11-15 10:20:32 INFO    __main__: step 27 loss 8.4728 lr 5.40e-05
+2026-11-15 10:20:36 INFO    __main__: step 28 loss 8.3918 lr 5.60e-05
+2026-11-15 10:20:39 INFO    __main__: step 29 loss 8.3639 lr 5.80e-05
+2026-11-15 10:20:43 INFO    __main__: step 30 loss 8.3140 lr 6.00e-05
+2026-11-15 10:20:44 INFO    __main__: step 30 val_loss 8.2179
+{"end_step": 30, "out_dir": "runs/cuda-dryrun-repeat", "start_step": 0, "train_loss": 8.313984870910645, "val_loss": 8.217878675460815}
+real 112.01
+user 88.63
+sys 32.53
+exit 0
+# 2026-11-15 10:20:45 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 5b. first half
+2026-11-15 10:20:46 INFO    syrinx.utils.device: Using device cuda (from argument)
+2026-11-15 10:20:51 INFO    __main__: step 1 loss 10.5329 lr 2.00e-06
+2026-11-15 10:20:55 INFO    __main__: step 2 loss 10.4883 lr 4.00e-06
+2026-11-15 10:20:59 INFO    __main__: step 3 loss 10.3956 lr 6.00e-06
+2026-11-15 10:21:02 INFO    __main__: step 4 loss 10.2563 lr 8.00e-06
+2026-11-15 10:21:06 INFO    __main__: step 5 loss 10.0772 lr 1.00e-05
+2026-11-15 10:21:09 INFO    __main__: step 6 loss 9.8973 lr 1.20e-05
+2026-11-15 10:21:13 INFO    __main__: step 7 loss 9.7055 lr 1.40e-05
+2026-11-15 10:21:16 INFO    __main__: step 8 loss 9.5545 lr 1.60e-05
+2026-11-15 10:21:20 INFO    __main__: step 9 loss 9.4431 lr 1.80e-05
+2026-11-15 10:21:23 INFO    __main__: step 10 loss 9.3619 lr 2.00e-05
+2026-11-15 10:21:27 INFO    __main__: step 11 loss 9.2954 lr 2.20e-05
+2026-11-15 10:21:31 INFO    __main__: step 12 loss 9.2349 lr 2.40e-05
+2026-11-15 10:21:34 INFO    __main__: step 13 loss 9.1797 lr 2.60e-05
+2026-11-15 10:21:38 INFO    __main__: step 14 loss 9.1517 lr 2.80e-05
+2026-11-15 10:21:41 INFO    __main__: step 15 loss 9.1134 lr 3.00e-05
+{"end_step": 15, "out_dir": "runs/cuda-dryrun-resume", "start_step": 0, "train_loss": 9.113365173339844, "val_loss": null}
+real 57.08
+user 49.30
+sys 16.93
+exit 0
+# 2026-11-15 10:21:42 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 5c. resume to 30
+2026-11-15 10:21:43 INFO    syrinx.utils.device: Using device cuda (from argument)
+2026-11-15 10:21:49 INFO    __main__: step 16 loss 9.0712 lr 3.20e-05
+2026-11-15 10:21:52 INFO    __main__: step 17 loss 9.0358 lr 3.40e-05
+2026-11-15 10:21:56 INFO    __main__: step 18 loss 8.9898 lr 3.60e-05
+2026-11-15 10:21:59 INFO    __main__: step 19 loss 8.9546 lr 3.80e-05
+2026-11-15 10:22:03 INFO    __main__: step 20 loss 8.8806 lr 4.00e-05
+2026-11-15 10:22:06 INFO    __main__: step 21 loss 8.8235 lr 4.20e-05
+2026-11-15 10:22:10 INFO    __main__: step 22 loss 8.7828 lr 4.40e-05
+2026-11-15 10:22:14 INFO    __main__: step 23 loss 8.7277 lr 4.60e-05
+2026-11-15 10:22:17 INFO    __main__: step 24 loss 8.6331 lr 4.80e-05
+2026-11-15 10:22:21 INFO    __main__: step 25 loss 8.5739 lr 5.00e-05
+2026-11-15 10:22:24 INFO    __main__: step 26 loss 8.5265 lr 5.20e-05
+2026-11-15 10:22:28 INFO    __main__: step 27 loss 8.4728 lr 5.40e-05
+2026-11-15 10:22:31 INFO    __main__: step 28 loss 8.3918 lr 5.60e-05
+2026-11-15 10:22:35 INFO    __main__: step 29 loss 8.3639 lr 5.80e-05
+2026-11-15 10:22:38 INFO    __main__: step 30 loss 8.3140 lr 6.00e-05
+2026-11-15 10:22:40 INFO    __main__: step 30 val_loss 8.2177
+{"end_step": 30, "out_dir": "runs/cuda-dryrun-resume", "start_step": 15, "train_loss": 8.313998222351074, "val_loss": 8.217672395706177}
+real 58.52
+user 51.04
+sys 16.83
+exit 0
+# 2026-11-15 10:22:41 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 5. check
+{"straight": "runs/cuda-dryrun/metrics.jsonl", "resumed": "runs/cuda-dryrun-resume/metrics.jsonl", "steps": 30, "max_abs_loss_diff": 6.771087646484375e-05, "noise_floor": 3.528594970703125e-05, "tolerance": 0.001, "passed": true}
+real 0.98
+user 7.19
+sys 0.11
+exit 0
+# 2026-11-15 10:22:42 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 6. 50M checkpoint on CUDA
+2026-11-15 10:22:43 INFO    syrinx.utils.device: Using device cuda (from argument)
+{"checkpoint": "runs/50m-a/checkpoints/step_0003815.pt", "step": 3815, "val_path": "data_cache/tokens/fineweb-edu/val", "seq_len": 1024, "batch_size": 16, "precision": "bf16-autocast", "max_batches": 50, "windows": 800, "tokens": 819200, "bytes": 3679510, "eos_targets": 857, "loss": 3.2966733598709106, "perplexity": 27.02259478327901, "bpb": 1.058888943604277, "seconds": 0.999066358897835, "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"}
+real 3.11
+user 81.58
+sys 1.02
+exit 0
+# 2026-11-15 10:22:45 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 7. 300 steps of throughput
+2026-11-15 10:22:46 INFO    syrinx.utils.device: Using device cuda (from argument)
+2026-11-15 10:23:23 INFO    __main__: step 10 loss 9.3619 lr 2.00e-05
+2026-11-15 10:23:59 INFO    __main__: step 20 loss 8.8806 lr 4.00e-05
+2026-11-15 10:24:34 INFO    __main__: step 30 loss 8.3140 lr 6.00e-05
+2026-11-15 10:25:10 INFO    __main__: step 40 loss 7.7545 lr 8.00e-05
+2026-11-15 10:25:45 INFO    __main__: step 50 loss 7.3076 lr 1.00e-04
+2026-11-15 10:26:21 INFO    __main__: step 60 loss 6.9215 lr 1.20e-04
+2026-11-15 10:26:56 INFO    __main__: step 70 loss 6.6473 lr 1.40e-04
+2026-11-15 10:27:32 INFO    __main__: step 80 loss 6.4131 lr 1.60e-04
+2026-11-15 10:28:07 INFO    __main__: step 90 loss 6.2475 lr 1.80e-04
+2026-11-15 10:28:43 INFO    __main__: step 100 loss 6.1088 lr 2.00e-04
+2026-11-15 10:29:19 INFO    __main__: step 110 loss 6.0035 lr 2.20e-04
+2026-11-15 10:29:54 INFO    __main__: step 120 loss 5.8849 lr 2.40e-04
+2026-11-15 10:30:30 INFO    __main__: step 130 loss 5.7907 lr 2.60e-04
+2026-11-15 10:31:05 INFO    __main__: step 140 loss 5.6861 lr 2.80e-04
+2026-11-15 10:31:41 INFO    __main__: step 150 loss 5.5841 lr 3.00e-04
+2026-11-15 10:32:16 INFO    __main__: step 160 loss 5.4617 lr 3.20e-04
+2026-11-15 10:32:52 INFO    __main__: step 170 loss 5.4041 lr 3.40e-04
+2026-11-15 10:33:27 INFO    __main__: step 180 loss 5.3298 lr 3.60e-04
+2026-11-15 10:34:03 INFO    __main__: step 190 loss 5.2875 lr 3.80e-04
+2026-11-15 10:34:39 INFO    __main__: step 200 loss 5.1828 lr 4.00e-04
+2026-11-15 10:35:14 INFO    __main__: step 210 loss 5.1102 lr 4.20e-04
+2026-11-15 10:35:50 INFO    __main__: step 220 loss 5.0579 lr 4.40e-04
+2026-11-15 10:36:25 INFO    __main__: step 230 loss 5.0115 lr 4.60e-04
+2026-11-15 10:37:01 INFO    __main__: step 240 loss 4.9564 lr 4.80e-04
+2026-11-15 10:37:36 INFO    __main__: step 250 loss 4.9106 lr 5.00e-04
+2026-11-15 10:38:12 INFO    __main__: step 260 loss 4.9124 lr 5.20e-04
+2026-11-15 10:38:48 INFO    __main__: step 270 loss 4.8797 lr 5.40e-04
+2026-11-15 10:39:23 INFO    __main__: step 280 loss 4.7713 lr 5.60e-04
+2026-11-15 10:39:59 INFO    __main__: step 290 loss 4.7255 lr 5.80e-04
+2026-11-15 10:40:34 INFO    __main__: step 300 loss 4.6713 lr 6.00e-04
+2026-11-15 10:40:36 INFO    __main__: step 300 val_loss 4.6097
+{"end_step": 300, "out_dir": "runs/cuda-bench", "start_step": 0, "train_loss": 4.671322345733643, "val_loss": 4.609659218788147}
+real 1071.66
+user 761.11
+sys 318.74
+exit 0
+# 2026-11-15 10:40:37 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | 7. report
+2026-11-15 10:40:38 INFO    __main__: median 147406 tok/s over steps 220-300 (22.09x proxy): full-budget
+{"metrics": "runs/cuda-bench/metrics.jsonl", "window_seconds": 300.0, "covered_seconds": 320.0979142729193, "run_seconds": 1066.8429064424708, "first_step": 220, "last_step": 300, "samples": 9, "median_tok_s": 147406.10060220174, "min_tok_s": 147385.47139274245, "max_tok_s": 147443.62867516954, "proxy_tok_s": 6674.0, "ratio_to_proxy": 22.086619808540867, "investigate": false, "decision": "full-budget"}
+real 1.07
+user 7.21
+sys 0.10
+exit 0
+# 2026-11-15 10:40:38 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | dry run complete: copy the log and experiments/*cuda-2026-11-15* back to the Mac

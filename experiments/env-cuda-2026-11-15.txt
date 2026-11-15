@@ -1,0 +1,22 @@
+# Syrinx environment report, generated 2026-11-15T10:16:32+05:30
+python: 3.12.16
+torch: 2.14.0+cu130
+numpy: 2.5.3
+tokenizers: 0.23.2
+os: Linux-5.14.0-427.13.1.el9_4.x86_64-x86_64-with-glibc2.34
+chip: x86_64
+cpu_count: 192
+system_memory_gib: 377.37
+power_source: n/a
+pmset_powermode: n/a
+mps_built: False
+mps_available: False
+PYTORCH_ENABLE_MPS_FALLBACK: unset
+device: cuda
+bf16_autocast_supported: True
+bf16_probe: bf16 autocast fwd+bwd ok on cuda, rel_err 7.55e-07
+sdpa_causal: ok
+matmul_tflops_fp32 (n=4096, iters=30): 75.21
+matmul_tflops_fp16 (n=4096, iters=30): 379.35
+matmul_tflops_bf16 (n=4096, iters=30): 382.78
+recommended_max_memory_gib: 94.97

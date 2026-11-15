@@ -762,3 +762,40 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   is not a pure scaling effect.
 - Caveats: one model, one run, 0-shot; comparable only to runs with the same task configs
   (`task_config_sha256`). Not comparable with published scores of other models.
+
+## EXP-022 — CUDA dry run on the college cluster (Phase 6, before the 125M run)
+- Date: 2026-11-15
+- Git SHA: 0c1ebfa-dirty (the `tests/test_device.py` fix below, not yet committed)
+- Hardware: one NVIDIA RTX PRO 6000 Blackwell Server Edition (97,887 MiB; 94.97 GiB usable to PyTorch),
+  driver 595.71.05, torch 2.14.0+cu130, Python 3.12.16, Linux (Slurm job 935, 24 min 9 s)
+- Checklist: `docs/cuda-dry-run.md`, steps 1, 2 and 4-7 as one job; config
+  `configs/syrinx-125m-cluster.yaml` (micro-batch 32 x accumulation 16 = 524,288 tokens per step)
+- Raw output: [`cuda-dryrun-2026-11-15.txt`](cuda-dryrun-2026-11-15.txt) (the job log),
+  [`env-cuda-2026-11-15.txt`](env-cuda-2026-11-15.txt), [`parity-cuda-2026-11-15.json`](parity-cuda-2026-11-15.json),
+  [`throughput-cuda-2026-11-15.json`](throughput-cuda-2026-11-15.json)
+- Results:
+
+  | step | check | result |
+  |---|---|---|
+  | 1 | environment | bf16 autocast fwd+bwd ok (relative error 7.55e-07), SDPA causal ok; matmul 75.2 fp32 / 379.4 fp16 / 382.8 bf16 TFLOPS |
+  | 2a | full test suite, `SYRINX_DEVICE=cuda` | passed (exit 0; the count was lost, see caveats) |
+  | 2b | the 5 CUDA accelerator tests run, not skip | 5 passed |
+  | 4 | 30 steps from scratch | first loss 10.5329 (ln 32,768 = 10.3972, tolerance 0.15), last loss 8.3140, all finite, peak 31.49 GiB against the 46.18 GiB estimate (57.72 with the x1.25 margin) |
+  | 5 | stop at 15, resume to 30 | max loss difference vs the uninterrupted run 6.77e-05; two uninterrupted runs differ by 3.53e-05; tolerance 1e-3 |
+  | 6 | final 50M checkpoint, first 50 val batches, bf16 | val loss 3.296673 on CUDA vs 3.296663 on MPS ([`parity-mps-2026-11-14.json`](parity-mps-2026-11-14.json)): difference 1.1e-05, limit 1e-2 |
+  | 7 | 300 steps of throughput | median 147,406 tok/s over steps 220-300 (range 147,385-147,444); 22.1x the EXP-000 proxy; about 3.56 s per optimizer step |
+
+- Observations: every check passed, so the 125M run went ahead on this GPU (docs/decisions.md,
+  2026-11-14 and 2026-11-15). The measured peak came in 32% under the analytic estimate; on MPS the
+  driver figure ran above it (EXP-000), so the estimate is not a tight bound on either backend. At the
+  step-7 rate the 4,769-step run projects to about 4.7 h. Sustained throughput is about 127 TFLOPS
+  (147,406 tok/s x 8.589e8 FLOPs per token), roughly a third of the bf16 matmul figure.
+- Before this run: job 934 stopped at step 2a with 1 failed, 779 passed, 48 skipped (its Slurm log on the
+  cluster). `test_mps_fallback_env_rejected` assumed the machine has MPS; without MPS the "not available"
+  error is raised before the fallback check it tests. The test now patches MPS availability to True
+  (`tests/test_device.py`); `device.py` is unchanged.
+- Caveats: the job log is missing steps 0-2a. Step 2b ran `tee /dev/stderr`, which on Linux reopens the
+  log file and truncates it; the script no longer does this. Step 2a's pass is known from the job going
+  on (each step stops the job on a non-zero exit), but its test counts were not kept. Step 5 shows
+  resume works over 30 steps at a very low LR (6e-05 at step 30); it says nothing about longer runs,
+  where GPU non-determinism makes runs with the same seed drift apart (seen in the 125M run).
