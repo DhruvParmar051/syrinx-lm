@@ -43,7 +43,12 @@ def test_resolve_unavailable_mps_raises(clean_env: pytest.MonkeyPatch) -> None:
 
 
 def test_mps_fallback_env_rejected(clean_env: pytest.MonkeyPatch) -> None:
-    """With PYTORCH_ENABLE_MPS_FALLBACK=1, resolving mps raises RuntimeError."""
+    """With PYTORCH_ENABLE_MPS_FALLBACK=1, resolving mps raises RuntimeError.
+
+    MPS availability is monkeypatched True so the fallback check is reached on any machine; without
+    MPS, "not available" is raised first (test_resolve_unavailable_mps_raises).
+    """
+    clean_env.setattr(torch.backends.mps, "is_available", lambda: True)
     clean_env.setenv("PYTORCH_ENABLE_MPS_FALLBACK", "1")
     with pytest.raises(RuntimeError, match="PYTORCH_ENABLE_MPS_FALLBACK"):
         resolve_device("mps")
