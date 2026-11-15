@@ -1,0 +1,303 @@
+{
+  "model_dir": "exports/syrinx-125m",
+  "model_sha256": "29dfaf45d1c5132c770a8b598108f11612044ccd569e2a3db9f43c6240ad495d",
+  "config_sha256": "d7bed0d74a96b58dadc982423e5e6709be08c5781ba0eae728a08506f5475abe",
+  "lm_eval_version": "0.4.13",
+  "transformers_version": "5.17.0",
+  "torch_version": "2.14.0",
+  "device": "mps",
+  "batch_size": 32,
+  "limit": null,
+  "num_fewshot": 0,
+  "add_bos_token": true,
+  "dtype": "float32",
+  "contamination": "experiments/contamination-2026-10-14.json",
+  "contamination_sha256": "839e2d86e90a4d68cb1bb6c1213ea6e61252c1ea7c6d76cb8df644c2fc64bda6",
+  "seconds": 393.07397245899483,
+  "benchmarks": {
+    "hellaswag": {
+      "task": "syrinx_hellaswag",
+      "headline": "acc_norm",
+      "task_config_sha256": "189310093a5e3834890b7dd1a06a5d5911de40d71c817ef98e0c78d210c9958f",
+      "harness": {
+        "acc": 0.28689504082852024,
+        "acc_norm": 0.31388169687313283
+      },
+      "subsets": {
+        "all": {
+          "acc": {
+            "n": 10042,
+            "value": 0.28689504082852024,
+            "stderr": 0.004513652709543154
+          },
+          "acc_norm": {
+            "n": 10042,
+            "value": 0.31388169687313283,
+            "stderr": 0.004630974502174509
+          }
+        },
+        "clean": {
+          "acc": {
+            "n": 10002,
+            "value": 0.28654269146170763,
+            "stderr": 0.004521007613485138
+          },
+          "acc_norm": {
+            "n": 10002,
+            "value": 0.3132373525294941,
+            "stderr": 0.004637636231639708
+          }
+        },
+        "contaminated": {
+          "acc": {
+            "n": 40,
+            "value": 0.375,
+            "stderr": 0.07654655446197431
+          },
+          "acc_norm": {
+            "n": 40,
+            "value": 0.475,
+            "stderr": 0.07895805848676878
+          }
+        },
+        "unchecked": {
+          "acc": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          },
+          "acc_norm": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          }
+        },
+        "unmatched": {
+          "acc": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          },
+          "acc_norm": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          }
+        }
+      }
+    },
+    "arc_easy": {
+      "task": "syrinx_arc_easy",
+      "headline": "acc",
+      "task_config_sha256": "952a34ef7d199de40ae2dcb996d46c8afa25639290dc959c168951bd6aa588ae",
+      "harness": {
+        "acc": 0.5071548821548821,
+        "acc_norm": 0.44865319865319864
+      },
+      "subsets": {
+        "all": {
+          "acc": {
+            "n": 2376,
+            "value": 0.5071548821548821,
+            "stderr": 0.010256573970960293
+          },
+          "acc_norm": {
+            "n": 2376,
+            "value": 0.44865319865319864,
+            "stderr": 0.010203392558035396
+          }
+        },
+        "clean": {
+          "acc": {
+            "n": 2278,
+            "value": 0.5035118525021949,
+            "stderr": 0.010475685022306102
+          },
+          "acc_norm": {
+            "n": 2278,
+            "value": 0.44776119402985076,
+            "stderr": 0.01041861109006431
+          }
+        },
+        "contaminated": {
+          "acc": {
+            "n": 22,
+            "value": 0.6363636363636364,
+            "stderr": 0.10255928633050294
+          },
+          "acc_norm": {
+            "n": 22,
+            "value": 0.5,
+            "stderr": 0.10660035817780522
+          }
+        },
+        "unchecked": {
+          "acc": {
+            "n": 76,
+            "value": 0.5789473684210527,
+            "stderr": 0.0566344828262074
+          },
+          "acc_norm": {
+            "n": 76,
+            "value": 0.4605263157894737,
+            "stderr": 0.05717491954000364
+          }
+        },
+        "unmatched": {
+          "acc": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          },
+          "acc_norm": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          }
+        }
+      }
+    },
+    "piqa": {
+      "task": "syrinx_piqa",
+      "headline": "acc_norm",
+      "task_config_sha256": "627245228bac390feb93095b50a9aaec2f0fae5af22531ce6871a83cb7c1c219",
+      "harness": {
+        "acc": 0.6262241566920566,
+        "acc_norm": 0.6131664853101197
+      },
+      "subsets": {
+        "all": {
+          "acc": {
+            "n": 1838,
+            "value": 0.6262241566920566,
+            "stderr": 0.011284901423826123
+          },
+          "acc_norm": {
+            "n": 1838,
+            "value": 0.6131664853101197,
+            "stderr": 0.011360004353575334
+          }
+        },
+        "clean": {
+          "acc": {
+            "n": 1682,
+            "value": 0.6349583828775267,
+            "stderr": 0.011738992488451708
+          },
+          "acc_norm": {
+            "n": 1682,
+            "value": 0.6200951248513674,
+            "stderr": 0.011834600337685904
+          }
+        },
+        "contaminated": {
+          "acc": {
+            "n": 3,
+            "value": 1.0,
+            "stderr": 0.0
+          },
+          "acc_norm": {
+            "n": 3,
+            "value": 1.0,
+            "stderr": 0.0
+          }
+        },
+        "unchecked": {
+          "acc": {
+            "n": 153,
+            "value": 0.5228758169934641,
+            "stderr": 0.04038027547006634
+          },
+          "acc_norm": {
+            "n": 153,
+            "value": 0.5294117647058824,
+            "stderr": 0.040352608268825606
+          }
+        },
+        "unmatched": {
+          "acc": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          },
+          "acc_norm": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          }
+        }
+      }
+    },
+    "lambada": {
+      "task": "syrinx_lambada",
+      "headline": "acc",
+      "task_config_sha256": "c72d391fada8f5e61475067f390f0e1bbee37a02c5f95560ed6820c8c5d5763f",
+      "harness": {
+        "acc": 0.22647001746555404,
+        "perplexity": 125.87272374796336
+      },
+      "subsets": {
+        "all": {
+          "acc": {
+            "n": 5153,
+            "value": 0.22647001746555404,
+            "stderr": 0.005830608232816268
+          },
+          "perplexity": {
+            "n": 5153,
+            "value": 125.87272374796336,
+            "stderr": null
+          }
+        },
+        "clean": {
+          "acc": {
+            "n": 5153,
+            "value": 0.22647001746555404,
+            "stderr": 0.005830608232816268
+          },
+          "perplexity": {
+            "n": 5153,
+            "value": 125.87272374796336,
+            "stderr": null
+          }
+        },
+        "contaminated": {
+          "acc": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          },
+          "perplexity": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          }
+        },
+        "unchecked": {
+          "acc": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          },
+          "perplexity": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          }
+        },
+        "unmatched": {
+          "acc": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          },
+          "perplexity": {
+            "n": 0,
+            "value": null,
+            "stderr": null
+          }
+        }
+      }
+    }
+  }
+}

@@ -834,3 +834,38 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   model with `dtype=torch.bfloat16`.
 - Caveats: the preview README is not the model card; the card (`configs/cards/syrinx-125m.yaml`) needs
   the training log, config and eval file from the cluster. The repo stays private until it is generated.
+
+## EXP-024 — Benchmarks for the 125M model, overall and on clean examples (Phase 8)
+- Date: 2026-11-15
+- Git SHA: 0c1ebfa (uncommitted changes in docs and experiments only)
+- Model: `exports/syrinx-125m` as downloaded from the private Hub repo (EXP-023; `model_sha256`
+  29dfaf45d1c5... in the JSON, the same file as on the Hub); the 125M model of EXP-025, step 4769
+- Command: `uv run python scripts/run_benchmarks.py --model-dir exports/syrinx-125m --out
+  experiments/benchmarks-125m-a.json` (settings as EXP-017 and EXP-021: lm-eval 0.4.13, local task
+  configs with unchanged `task_config_sha256`, 0-shot, fp32, `add_bos_token=True`, batch size 32, MPS)
+- Raw output: [`benchmarks-125m-a.json`](benchmarks-125m-a.json), [`benchmarks-125m-a.txt`](benchmarks-125m-a.txt)
+- Hardware state: battery power
+- Contamination labels: EXP-016, which scanned all 26 FineWeb-Edu train shards: exactly the 2.5B tokens
+  this model trained on, so here the flagged set is the set it could have seen.
+- Metrics (source: the JSON files; ± is the binomial standard error; chance as in EXP-017):
+
+  | benchmark | metric | all (n) | clean (n) | chance | 50m all (EXP-021) |
+  |---|---|---|---|---|---|
+  | HellaSwag | acc_norm | 0.3139 ± 0.0046 (10,042) | 0.3132 (10,002) | 0.25 | 0.2812 |
+  | ARC-Easy | acc | 0.5072 ± 0.0103 (2,376) | 0.5035 (2,278) | 0.2502 | 0.4722 |
+  | PIQA | acc_norm | 0.6132 ± 0.0114 (1,838) | 0.6201 (1,682) | 0.5 | 0.5919 |
+  | LAMBADA | acc | 0.2265 ± 0.0058 (5,153) | 0.2265 (5,153) | ~0 | 0.1861 |
+  | LAMBADA | perplexity | 125.9 | 125.9 | | 366.1 |
+
+- Time: 393.1 s harness time (395.8 s wall), within the 6-8 min estimate scaled from EXP-021 by
+  parameter count.
+- Observations: every benchmark is above chance, by 9.9 SE (PIQA) to 24.9 SE (ARC-Easy), and above the
+  50m on all four: +0.033 HellaSwag, +0.035 ARC-Easy, +0.021 PIQA, +0.040 LAMBADA accuracy, and LAMBADA
+  perplexity falls 2.9x. Treating the two runs as independent (conservative, since the questions are
+  the same), the gains are about 5 SE for HellaSwag and LAMBADA, 2.4 SE for ARC-Easy and 1.3 SE for
+  PIQA, so the PIQA gain alone is not distinguishable from noise. Clean-subset scores are within 0.007
+  of the full-set scores. Unlike 10m vs 50m, 50m vs 125m share training data (the same FineWeb-Edu
+  shards, 1.0B vs 2.5B tokens of them) and code; they differ in size, tokens seen, learning rate and
+  hardware.
+- Caveats: one model, one run, 0-shot; comparable only to runs with the same task configs. Not
+  comparable with published scores of other models.
