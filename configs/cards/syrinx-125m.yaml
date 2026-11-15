@@ -1,0 +1,40 @@
+# Model card manifest for syrinx-125m (scripts/make_model_card.py). Every number in the card is read
+# from the evidence files below; this file holds only paths and descriptive text.
+# Pending (on the cluster until it is reachable again): 125m-a-config.yaml (= runs/125m-a.yaml),
+# 125m-a-train.txt and the full-split eval JSON; EXP-025 and EXP-026 are written when they arrive.
+# exports/syrinx-125m/README.md is the auto-uploaded preview: move it aside before rendering, since
+# make_model_card.py never overwrites a file.
+name: syrinx-125m
+repo_id: DhruvParmar051/syrinx-125m   # Hub repo for the usage snippet (created private, 2026-11-15)
+export_dir: exports/syrinx-125m
+train_config: experiments/125m-a-config.yaml   # the run's config (lr 2.4e-3 from the sweep)
+train_log: experiments/125m-a-train.txt
+eval: experiments/eval-125m-a-step4769-bf16-autocast.json
+parity: experiments/export-125m-a-step4769-parity.json
+contamination: experiments/contamination-2026-10-14.json
+benchmarks: experiments/benchmarks-125m-a.json
+benchmark_dir: data_cache/benchmarks
+experiments:
+  training: EXP-025
+  eval: EXP-026
+  parity: EXP-023
+  contamination: EXP-016
+  benchmarks: EXP-024
+datasets: [fineweb-edu]
+usage_prompt: The water cycle is   # in the training domain (educational web text)
+hardware: one NVIDIA RTX PRO 6000 Blackwell Server Edition (96 GB) GPU of a university cluster, PyTorch CUDA backend
+summary: >-
+  The largest Syrinx model: a decoder-only transformer trained from scratch on 2.5B tokens of
+  FineWeb-Edu, a corpus of educational web pages. It is the third of three models (10M, 50M, 125M) in a
+  scaling series; the 10M and 50M models were trained on a laptop, this one on a single GPU of a
+  university cluster, with the same code.
+intended_use: >-
+  Studying a small language model trained end to end from scratch, and continuing English text in an
+  educational register. It is a base model: it continues text and does not follow instructions.
+limitations:
+  - Base model, not instruction-tuned or safety-tuned; it does not answer questions reliably and its
+    continuations can be fluent but factually wrong or repetitive.
+  - Trained on 2.5B tokens of English educational web text only; other languages, code and specialised
+    domains are poorly covered.
+  - Inherits the biases and errors of web text; FineWeb-Edu's quality filter does not remove them.
+  - Benchmark scores are above chance but low, as expected at this size.
