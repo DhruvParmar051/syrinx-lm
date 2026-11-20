@@ -336,5 +336,26 @@ longer sweep costs about 1 h more and makes the LR choice firmer.
 **Revisit if:** the sweep picks an end of the range (1.2e-3 is the middle; 2.4e-3 winning means the
 range should go higher), or the job stops at any stage.
 
+## 2026-11-20 — Close Phases 6, 7 and 10: final checkpoints only, no speed-up work
+**Context:** all three models are trained, evaluated and exported (EXP-012/019/021 for 10M and 50M,
+EXP-023 to EXP-026 for 125M). Two plan items are not met as written: Gate 6b ("all checkpoints are
+archived") and Phase 10 ("milestone checkpoints go up as revisions"). On the Mac only the final
+checkpoint of each model remains (`step_0009000.pt`, `step_0003815.pt`, `step_0004769.pt`; the 125M one
+copied from the cluster with matching sha256). The 125M milestones (steps 1000-4000) were in gpunode1's
+`/tmp`, which is not backed up; the node rebooted unexpectedly on 2026-11-19 and is down, so whether
+they survived is unknown (a listing job is queued for when it returns). Phase 7 has not been run.
+**Decision:**
+- **Archive = final checkpoint + full per-step metrics + all logs and eval files** for each model.
+  That is what Gate 6b is taken to require; the loss curves can be redrawn from `metrics.jsonl`.
+- **No milestone revisions on the Hub.** Each repo's `main` holds the final model only.
+- **Phase 7 is skipped.** The plan allows only optimizations a measurement justifies. The 125M run
+  took 4.75 h at 147,416 tok/s median (about 127 TFLOPS, a third of the measured bf16 matmul figure;
+  EXP-022, EXP-025), with SDPA already in use; the 10M and 50M runs are finished. Nothing waits on
+  speed, so before/after measurements would not change any result.
+**Why:** the missing items add little: intermediate checkpoints only matter for studying training
+dynamics, which the metrics files already cover, and speed-ups would only matter for a further run.
+**Revisit if:** the 125M milestones turn out to exist on gpunode1 (they can then go up as branches
+`step-1000` ... `step-4000`), or a new training run (Phase 11, instruction tuning) is planned.
+
 ## Open (not yet decided)
-- Nothing open for Phase 6; see the 2026-10-15 entry.
+- Nothing open for Phases 0-10. Phase 11 (research experiments) is not started.
