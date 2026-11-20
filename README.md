@@ -2,8 +2,9 @@
 
 A GPT-style decoder-only language model built from scratch in PyTorch: RMSNorm, RoPE, SwiGLU,
 causal multi-head attention, tied embeddings, a 32K byte-level BPE tokenizer, and context 1024.
-It is scaled 10M → 50M → 125M parameters on a single laptop (Apple M5 Pro, PyTorch MPS) and
-released as a checkpoint that loads with `LlamaForCausalLM`, no custom code needed.
+It is scaled 10M → 50M → 125M parameters with the same code: the 10M and 50M models on a single
+laptop (Apple M5 Pro, PyTorch MPS), the 125M model on one NVIDIA RTX PRO 6000 GPU of a university
+cluster. Each is released as a checkpoint that loads with `LlamaForCausalLM`, no custom code needed.
 
 ![The three Syrinx sizes as 3D towers: 10M with 4 blocks, 50M with 10, 125M with 12](docs/figures/architecture-three-sizes.png)
 
@@ -21,11 +22,13 @@ added back into the residual stream; the LM head shares its weights with the emb
 |---|---|---|
 | [syrinx-10m](https://huggingface.co/DhruvParmar051/syrinx-10m) | TinyStories, 295M tokens | **Released** on Hugging Face |
 | [syrinx-50m](https://huggingface.co/DhruvParmar051/syrinx-50m) | FineWeb-Edu, 1.0B tokens | **Released** on Hugging Face |
-| syrinx-125m | FineWeb-Edu, 2.5B tokens | Next |
+| syrinx-125m | FineWeb-Edu, 2.5B tokens | **Trained**; on Hugging Face (private until release) |
 
-![Training and validation loss of the 10m and 50m runs](docs/figures/loss-curves.png)
+![Training and validation loss of the 10m, 50m and 125m runs](docs/figures/loss-curves.png)
 
-The two panels use different datasets, so their losses are not comparable with each other.
+The 10m panel uses a different dataset, so its loss is not comparable with the other two.
+On the same FineWeb-Edu validation split, bits per byte fell from 1.0775 (50M) to 0.9825 (125M).
+Full 125M model card: [`docs/model-cards/syrinx-125m.md`](docs/model-cards/syrinx-125m.md).
 
 ## syrinx-10m
 
