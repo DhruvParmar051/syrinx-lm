@@ -1,0 +1,13 @@
+# 2026-11-15 17:23:55 | master | export ready (2026-11-15 17:22:27); uploading to DhruvParmar051/syrinx-125m as private
+# account: DhruvParmar051
+# files: ['README.md', 'config.json', 'generation_config.json', 'model.safetensors', 'parity.json', 'tokenizer.json', 'tokenizer_config.json']
+url=https://huggingface.co/DhruvParmar051/syrinx-125m/commit/942787eb63d5e648df05224e23029ea71a0a8dec
+# README.md: match (size)
+# config.json: match (size)
+# generation_config.json: match (size)
+# model.safetensors: match (sha256)
+# parity.json: match (size)
+# tokenizer.json: match (size)
+# tokenizer_config.json: match (size)
+# verify: private=True all files match=True
+exit 0

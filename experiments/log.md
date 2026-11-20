@@ -806,7 +806,7 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   (Slurm job 944, CPU, gpunode1) ran `scripts/export_hf.py` on the final checkpoint (step 4769) and wrote a
   short preview README from the run's files; a login-node script uploaded the folder to
   `DhruvParmar051/syrinx-125m`, created **private**. Hub commit 942787eb63, 2026-11-15 11:54:51 UTC
-  (17:24 IST). The uploader's own log (`experiments/upload-125m-2026-11-15.txt`) is still on the cluster.
+  (17:24 IST). The uploader's own log: [`upload-125m-2026-11-15.txt`](upload-125m-2026-11-15.txt).
 - Raw output: [`export-125m-a-step4769-parity.json`](export-125m-a-step4769-parity.json) (the uploaded
   `parity.json`), [`hub-check-125m-2026-11-15.txt`](hub-check-125m-2026-11-15.txt) (this check, on the Mac)
 - Parity (cluster): max logit difference 0.0 against our model (tolerance 1e-4), tokenizer ok, passed;
@@ -832,6 +832,12 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   precision at large positions. It affects only users who wrap the HF model in an MPS autocast; fp32
   (the benchmarks, EXP-024) and our own model are unaffected. Not checked: CUDA autocast, and loading the
   model with `dtype=torch.bfloat16`.
+- Re-export on the Mac (2026-11-20): the final checkpoint copied back from the cluster (sha256
+  968db40d..., the same on both machines), exported with `scripts/export_hf.py --out-dir
+  exports/syrinx-125m-mac`: parity passed (max logit difference 0.0), and `model.safetensors` and the other
+  four model files are byte-identical to the Hub copy. Its parity file
+  ([`export-125m-a-step4769-parity-mac.json`](export-125m-a-step4769-parity-mac.json)) names the checkpoint
+  by the same path as the eval (EXP-026), so the model card uses this export.
 - Caveats: the preview README is not the model card; the card (`configs/cards/syrinx-125m.yaml`) needs
   the training log, config and eval file from the cluster. The repo stays private until it is generated.
 
@@ -869,3 +875,69 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   hardware.
 - Caveats: one model, one run, 0-shot; comparable only to runs with the same task configs. Not
   comparable with published scores of other models.
+
+## EXP-025 — 125M learning-rate sweep and full run on the cluster GPU (Phase 6)
+- Date: 2026-11-15
+- Git SHA: 0c1ebfa-dirty (as EXP-022: the `tests/test_device.py` fix, not yet committed)
+- Hardware: one NVIDIA RTX PRO 6000 Blackwell Server Edition (95.0 GiB usable to PyTorch), PyTorch CUDA
+  backend; one unattended Slurm job (941), 10:46:45-17:21:53 IST, 6 h 35 min including the eval (EXP-026)
+- Plan: docs/decisions.md, 2026-11-14 and 2026-11-15: three sweep runs of 600 steps (lr 6e-4, 1.2e-3,
+  2.4e-3; `min_lr` = lr / 10; the full 4,769-step schedule, stopped at 600), the pick rule of EXP-013
+  (lowest val loss at the compare step among stable runs, 0.01 tie band towards the lower LR, spike
+  threshold 1.0 nats), then the full run with the picked LR.
+- Config: [`125m-a-config.yaml`](125m-a-config.yaml) (the run's own copy): 12 layers, d_model 768, 12 heads,
+  d_ff 2560, micro-batch 32 x accumulation 16 x 1024 = 524,288 tokens per step, 4,769 steps, warmup 300,
+  AdamW (0.9, 0.95), weight decay 0.1, clip 1.0, bf16 autocast, seed 1337. The sweep runs used the same
+  file apart from `lr` and `min_lr`.
+- Raw output: [`125m-sweep-lr-6.0e-04.txt`](125m-sweep-lr-6.0e-04.txt),
+  [`125m-sweep-lr-1.2e-03.txt`](125m-sweep-lr-1.2e-03.txt), [`125m-sweep-lr-2.4e-03.txt`](125m-sweep-lr-2.4e-03.txt),
+  [`125m-lr-sweep-summary.json`](125m-lr-sweep-summary.json), [`125m-a-train.txt`](125m-a-train.txt);
+  per-step metrics in `runs/125m-a/metrics.jsonl` and `runs/125m-sweep/*/metrics.jsonl` (not in git)
+- Sweep (val loss, 100 batches; each run 2,182-2,183 s):
+
+  | lr | step 100 | 200 | 300 | 400 | 500 | 600 |
+  |---|---|---|---|---|---|---|
+  | 6e-4 | 6.0845 | 5.1933 | 4.6578 | 4.3002 | 4.0434 | 4.0226 |
+  | 1.2e-3 | 5.8046 | 4.9585 | 4.7810 | 4.1874 | 3.9292 | 3.7776 |
+  | **2.4e-3** | 5.7726 | 4.8691 | 4.4664 | 4.0756 | 3.8759 | **3.7358** |
+
+  All three stable; 2.4e-3 picked (0.042 below 1.2e-3, outside the tie band). It is the largest LR
+  tried, so the best LR may be higher; a 4.8e-3 run was not in the plan.
+- Full run (val loss, 100 batches, every 250 steps):
+
+  | step | 250 | 500 | 750 | 1000 | 1500 | 2000 | 2500 | 3000 | 3500 | 4000 | 4500 | 4769 |
+  |---|---|---|---|---|---|---|---|---|---|---|---|---|
+  | val loss | 4.7878 | 3.9227 | 3.6313 | 3.4987 | 3.3406 | 3.2520 | 3.1866 | 3.1304 | 3.0879 | 3.0544 | 3.0328 | 3.0263 |
+
+  Final train loss 3.0406 (last step). 2,500,329,472 tokens. Training time 17,114.85 s (4 h 45 min)
+  against the 4.7 h projected from EXP-022; median 147,416 tok/s and 3.557 s per step; peak memory
+  31.49 GiB, the same as the dry run.
+- Same config, different runs: the full run and the 2.4e-3 sweep run share config and seed, but their
+  train losses agree only to step 30 and differ by more than 1e-3 from step 40 (GPU non-determinism,
+  amplified at this LR). The full run had a bump the sweep run did not: logged train loss rose 0.21 at
+  step 200, 0.23 at step 210 and 0.28 at step 390, with grad norm 6.60 before clipping at step 200 (the
+  sweep run's maximum was 1.97), and was 0.39 above the sweep run at step 200. It recovered: 0.034 above at step 500, 0.027 at
+  600, val loss 3.9227 vs 3.8759 at step 500. After step 500 the largest grad norm was 0.23 and the
+  largest rise between logged steps 0.071 (step 3370); no rise came near the 1.0-nat spike threshold.
+- Observations: val loss fell monotonically at every eval. Steps 4500-4750 gained 0.0058 and the last 19
+  steps 0.0007: still falling, slowly, as the LR reached its minimum. The sweep comparison at step 600
+  is between single runs, and the
+  full run's own step-500 value shows that same-seed noise at this LR is about 0.05 early on: larger
+  than the 0.042 gap between 2.4e-3 and 1.2e-3. The pick is the right one under the rule, not a proven best.
+- Caveats: one run per LR, one seed. The 100-batch val loss here differs slightly from the full split
+  (EXP-026). Not comparable with published models (different data, tokenizer, token budget).
+
+## EXP-026 — Full-split validation of the final 125M checkpoint (Phase 7)
+- Date: 2026-11-15
+- Command (in job 941, right after training): `scripts/eval_checkpoint.py --checkpoint
+  runs/125m-a/checkpoints/step_0004769.pt --precision bf16-autocast` on CUDA, full val split, batch 32
+- Raw output: [`eval-125m-a-step4769-bf16-autocast.json`](eval-125m-a-step4769-bf16-autocast.json),
+  [`eval-125m-a-step4769.txt`](eval-125m-a-step4769.txt)
+- Result: loss **3.02797**, perplexity **20.655**, **0.98252** bits per byte over 11,929 non-overlapping
+  windows of 1,024 (12,215,296 tokens, 54,310,934 bytes, 11,512 EOS targets); 26.2 s.
+- Cross-check: the uploaded HF export on the Mac (MPS, fp32, same windows and counting, EXP-023) gives
+  3.02780 / 0.98247: within 2e-4, the size of the bf16-vs-fp32 gap seen on the 50M (EXP-019).
+- Scaling series (full split, bits per byte, same tokenizer and val split): 50M 1.0775 (EXP-019) ->
+  125M 0.9825.
+- Caveats: one checkpoint; the val split is separated from training by document (docs/decisions.md, 2026-09-22) but comes from
+  the same distribution, so this measures in-distribution fit only.

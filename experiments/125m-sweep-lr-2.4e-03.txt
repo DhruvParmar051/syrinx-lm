@@ -1,0 +1,73 @@
+# 2026-11-15 11:59:32 | git 0c1ebfa-dirty | gpunode1 | NVIDIA RTX PRO 6000 Blackwell Server Edition, 97887 MiB | train attempt 1: --out-dir runs/125m-sweep/lr-2.4e-03  --config runs/125m-sweep/lr-2.4e-03.yaml --stop-at-step 600 --log-interval 10 --eval-interval 100 --eval-batches 100 --ckpt-interval 100 --keep-last 1
+2026-11-15 11:59:33 INFO    syrinx.utils.device: Using device cuda (from argument)
+2026-11-15 12:00:10 INFO    __main__: step 10 loss 9.0078 lr 8.00e-05
+2026-11-15 12:00:45 INFO    __main__: step 20 loss 7.9827 lr 1.60e-04
+2026-11-15 12:01:21 INFO    __main__: step 30 loss 7.1587 lr 2.40e-04
+2026-11-15 12:01:57 INFO    __main__: step 40 loss 6.6985 lr 3.20e-04
+2026-11-15 12:02:32 INFO    __main__: step 50 loss 6.4400 lr 4.00e-04
+2026-11-15 12:03:08 INFO    __main__: step 60 loss 6.1888 lr 4.80e-04
+2026-11-15 12:03:43 INFO    __main__: step 70 loss 6.0468 lr 5.60e-04
+2026-11-15 12:04:19 INFO    __main__: step 80 loss 5.9354 lr 6.40e-04
+2026-11-15 12:04:54 INFO    __main__: step 90 loss 5.8084 lr 7.20e-04
+2026-11-15 12:05:30 INFO    __main__: step 100 loss 5.7636 lr 8.00e-04
+2026-11-15 12:05:37 INFO    __main__: step 100 val_loss 5.7726
+2026-11-15 12:06:13 INFO    __main__: step 110 loss 5.6920 lr 8.80e-04
+2026-11-15 12:06:49 INFO    __main__: step 120 loss 5.5679 lr 9.60e-04
+2026-11-15 12:07:24 INFO    __main__: step 130 loss 5.4751 lr 1.04e-03
+2026-11-15 12:08:00 INFO    __main__: step 140 loss 5.4553 lr 1.12e-03
+2026-11-15 12:08:35 INFO    __main__: step 150 loss 5.3024 lr 1.20e-03
+2026-11-15 12:09:11 INFO    __main__: step 160 loss 5.1427 lr 1.28e-03
+2026-11-15 12:09:46 INFO    __main__: step 170 loss 5.1086 lr 1.36e-03
+2026-11-15 12:10:22 INFO    __main__: step 180 loss 5.1028 lr 1.44e-03
+2026-11-15 12:10:57 INFO    __main__: step 190 loss 4.9965 lr 1.52e-03
+2026-11-15 12:11:33 INFO    __main__: step 200 loss 4.8852 lr 1.60e-03
+2026-11-15 12:11:40 INFO    __main__: step 200 val_loss 4.8691
+2026-11-15 12:12:16 INFO    __main__: step 210 loss 4.8659 lr 1.68e-03
+2026-11-15 12:12:52 INFO    __main__: step 220 loss 4.9232 lr 1.76e-03
+2026-11-15 12:13:28 INFO    __main__: step 230 loss 4.9307 lr 1.84e-03
+2026-11-15 12:14:03 INFO    __main__: step 240 loss 4.9394 lr 1.92e-03
+2026-11-15 12:14:39 INFO    __main__: step 250 loss 4.7672 lr 2.00e-03
+2026-11-15 12:15:14 INFO    __main__: step 260 loss 4.6608 lr 2.08e-03
+2026-11-15 12:15:50 INFO    __main__: step 270 loss 4.6292 lr 2.16e-03
+2026-11-15 12:16:25 INFO    __main__: step 280 loss 4.5604 lr 2.24e-03
+2026-11-15 12:17:01 INFO    __main__: step 290 loss 4.5197 lr 2.32e-03
+2026-11-15 12:17:37 INFO    __main__: step 300 loss 4.4870 lr 2.40e-03
+2026-11-15 12:17:44 INFO    __main__: step 300 val_loss 4.4664
+2026-11-15 12:18:20 INFO    __main__: step 310 loss 4.4208 lr 2.40e-03
+2026-11-15 12:18:55 INFO    __main__: step 320 loss 4.3665 lr 2.40e-03
+2026-11-15 12:19:31 INFO    __main__: step 330 loss 4.3983 lr 2.40e-03
+2026-11-15 12:20:06 INFO    __main__: step 340 loss 4.5472 lr 2.40e-03
+2026-11-15 12:20:42 INFO    __main__: step 350 loss 4.4844 lr 2.40e-03
+2026-11-15 12:21:17 INFO    __main__: step 360 loss 4.3349 lr 2.40e-03
+2026-11-15 12:21:53 INFO    __main__: step 370 loss 4.2413 lr 2.40e-03
+2026-11-15 12:22:29 INFO    __main__: step 380 loss 4.1615 lr 2.40e-03
+2026-11-15 12:23:04 INFO    __main__: step 390 loss 4.1043 lr 2.40e-03
+2026-11-15 12:23:40 INFO    __main__: step 400 loss 4.0941 lr 2.40e-03
+2026-11-15 12:23:47 INFO    __main__: step 400 val_loss 4.0756
+2026-11-15 12:24:23 INFO    __main__: step 410 loss 4.0330 lr 2.40e-03
+2026-11-15 12:24:59 INFO    __main__: step 420 loss 4.0143 lr 2.40e-03
+2026-11-15 12:25:34 INFO    __main__: step 430 loss 4.0065 lr 2.40e-03
+2026-11-15 12:26:10 INFO    __main__: step 440 loss 3.9897 lr 2.39e-03
+2026-11-15 12:26:45 INFO    __main__: step 450 loss 3.9436 lr 2.39e-03
+2026-11-15 12:27:21 INFO    __main__: step 460 loss 3.9731 lr 2.39e-03
+2026-11-15 12:27:56 INFO    __main__: step 470 loss 3.8922 lr 2.39e-03
+2026-11-15 12:28:32 INFO    __main__: step 480 loss 3.8867 lr 2.39e-03
+2026-11-15 12:29:07 INFO    __main__: step 490 loss 3.9051 lr 2.39e-03
+2026-11-15 12:29:43 INFO    __main__: step 500 loss 3.8950 lr 2.39e-03
+2026-11-15 12:29:50 INFO    __main__: step 500 val_loss 3.8759
+2026-11-15 12:30:26 INFO    __main__: step 510 loss 3.8736 lr 2.39e-03
+2026-11-15 12:31:02 INFO    __main__: step 520 loss 3.8362 lr 2.39e-03
+2026-11-15 12:31:37 INFO    __main__: step 530 loss 3.8278 lr 2.39e-03
+2026-11-15 12:32:13 INFO    __main__: step 540 loss 3.8026 lr 2.38e-03
+2026-11-15 12:32:48 INFO    __main__: step 550 loss 3.7727 lr 2.38e-03
+2026-11-15 12:33:24 INFO    __main__: step 560 loss 3.7656 lr 2.38e-03
+2026-11-15 12:34:00 INFO    __main__: step 570 loss 3.7580 lr 2.38e-03
+2026-11-15 12:34:35 INFO    __main__: step 580 loss 3.7389 lr 2.38e-03
+2026-11-15 12:35:11 INFO    __main__: step 590 loss 3.7308 lr 2.38e-03
+2026-11-15 12:35:46 INFO    __main__: step 600 loss 3.7548 lr 2.38e-03
+2026-11-15 12:35:53 INFO    __main__: step 600 val_loss 3.7358
+{"end_step": 600, "out_dir": "runs/125m-sweep/lr-2.4e-03", "start_step": 0, "train_loss": 3.7547976970672607, "val_loss": 3.735794012546539}
+real 2182.51
+user 1546.77
+sys 642.75
+exit 0

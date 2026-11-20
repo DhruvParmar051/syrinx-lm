@@ -1,0 +1,35 @@
+{
+  "step": 600,
+  "spike_nats": 1.0,
+  "tolerance": 0.01,
+  "runs": [
+    {
+      "run": "runs/125m-sweep/lr-6.0e-04",
+      "lr": 0.0006,
+      "val_loss": 4.022581725120545,
+      "stable": true,
+      "reason": "ok"
+    },
+    {
+      "run": "runs/125m-sweep/lr-1.2e-03",
+      "lr": 0.0012,
+      "val_loss": 3.7775722980499267,
+      "stable": true,
+      "reason": "ok"
+    },
+    {
+      "run": "runs/125m-sweep/lr-2.4e-03",
+      "lr": 0.0024,
+      "val_loss": 3.735794012546539,
+      "stable": true,
+      "reason": "ok"
+    }
+  ],
+  "chosen": {
+    "run": "runs/125m-sweep/lr-2.4e-03",
+    "lr": 0.0024,
+    "val_loss": 3.735794012546539,
+    "stable": true,
+    "reason": "ok"
+  }
+}

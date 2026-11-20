@@ -1,0 +1,2 @@
+2026-11-15 17:21:11 INFO    syrinx.utils.device: Using device cuda (from argument)
+{"checkpoint": "runs/125m-a/checkpoints/step_0004769.pt", "step": 4769, "val_path": "data_cache/tokens/fineweb-edu/val", "seq_len": 1024, "batch_size": 32, "precision": "bf16-autocast", "max_batches": null, "windows": 11929, "tokens": 12215296, "bytes": 54310934, "eos_targets": 11512, "loss": 3.027972801861494, "perplexity": 20.655317697261935, "bpb": 0.9825241467981632, "seconds": 26.230313987005502, "tokenizer_sha256": "0620753285f04d8302e725b5b1b7f43b9fe7a63ed063126aa8688f20073f07e8"}
