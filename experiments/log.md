@@ -838,6 +838,8 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
   four model files are byte-identical to the Hub copy. Its parity file
   ([`export-125m-a-step4769-parity-mac.json`](export-125m-a-step4769-parity-mac.json)) names the checkpoint
   by the same path as the eval (EXP-026), so the model card uses this export.
+- Release (2026-11-20): the model card replaced the preview README on the Hub (verified by sha256), and
+  the repo was made public; an anonymous request for it returns 200.
 - Caveats: the preview README is not the model card; the card (`configs/cards/syrinx-125m.yaml`) needs
   the training log, config and eval file from the cluster. The repo stays private until it is generated.
 

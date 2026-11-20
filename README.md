@@ -22,7 +22,7 @@ added back into the residual stream; the LM head shares its weights with the emb
 |---|---|---|
 | [syrinx-10m](https://huggingface.co/DhruvParmar051/syrinx-10m) | TinyStories, 295M tokens | **Released** on Hugging Face |
 | [syrinx-50m](https://huggingface.co/DhruvParmar051/syrinx-50m) | FineWeb-Edu, 1.0B tokens | **Released** on Hugging Face |
-| syrinx-125m | FineWeb-Edu, 2.5B tokens | **Trained**; on Hugging Face (private until release) |
+| [syrinx-125m](https://huggingface.co/DhruvParmar051/syrinx-125m) | FineWeb-Edu, 2.5B tokens | **Released** on Hugging Face |
 
 ![Training and validation loss of the 10m, 50m and 125m runs](docs/figures/loss-curves.png)
 
