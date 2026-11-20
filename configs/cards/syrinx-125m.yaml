@@ -1,16 +1,15 @@
 # Model card manifest for syrinx-125m (scripts/make_model_card.py). Every number in the card is read
 # from the evidence files below; this file holds only paths and descriptive text.
-# Pending (on the cluster until it is reachable again): 125m-a-config.yaml (= runs/125m-a.yaml),
-# 125m-a-train.txt and the full-split eval JSON; EXP-025 and EXP-026 are written when they arrive.
-# exports/syrinx-125m/README.md is the auto-uploaded preview: move it aside before rendering, since
-# make_model_card.py never overwrites a file.
+# export_dir is the Mac re-export of the downloaded final checkpoint: its model.safetensors is
+# byte-identical to the Hub copy exported on the cluster (EXP-023), and its parity file names the same
+# checkpoint path as the eval, which the card's consistency check requires.
 name: syrinx-125m
 repo_id: DhruvParmar051/syrinx-125m   # Hub repo for the usage snippet (created private, 2026-11-15)
-export_dir: exports/syrinx-125m
+export_dir: exports/syrinx-125m-mac
 train_config: experiments/125m-a-config.yaml   # the run's config (lr 2.4e-3 from the sweep)
 train_log: experiments/125m-a-train.txt
 eval: experiments/eval-125m-a-step4769-bf16-autocast.json
-parity: experiments/export-125m-a-step4769-parity.json
+parity: experiments/export-125m-a-step4769-parity-mac.json
 contamination: experiments/contamination-2026-10-14.json
 benchmarks: experiments/benchmarks-125m-a.json
 benchmark_dir: data_cache/benchmarks
@@ -38,3 +37,5 @@ limitations:
     domains are poorly covered.
   - Inherits the biases and errors of web text; FineWeb-Edu's quality filter does not remove them.
   - Benchmark scores are above chance but low, as expected at this size.
+  - On Apple MPS, run it in float32. Under `torch.autocast("mps", dtype=torch.bfloat16)`, transformers
+    5.17.0 computes the rotary angles in bf16 and the loss gets clearly worse (EXP-023).
