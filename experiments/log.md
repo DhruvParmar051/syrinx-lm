@@ -927,7 +927,7 @@ uv run python scripts/train.py --config configs/syrinx-10m.yaml --out-dir runs/<
 - Caveats: one run per LR, one seed. The 100-batch val loss here differs slightly from the full split
   (EXP-026). Not comparable with published models (different data, tokenizer, token budget).
 
-## EXP-026 — Full-split validation of the final 125M checkpoint (Phase 7)
+## EXP-026 — Full-split validation of the final 125M checkpoint (Phase 8)
 - Date: 2026-11-15
 - Command (in job 941, right after training): `scripts/eval_checkpoint.py --checkpoint
   runs/125m-a/checkpoints/step_0004769.pt --precision bf16-autocast` on CUDA, full val split, batch 32
